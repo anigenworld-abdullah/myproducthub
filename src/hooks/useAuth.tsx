@@ -31,7 +31,7 @@ export function useAuth(): AuthState {
     let active = true;
     (async () => {
       // Try claim, then check role
-      await supabase.rpc("claim_admin_role").catch(() => {});
+      try { await supabase.rpc("claim_admin_role"); } catch { /* ignore */ }
       const { data } = await supabase
         .from("user_roles")
         .select("role")
