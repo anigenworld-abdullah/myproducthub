@@ -132,6 +132,7 @@ function Header() {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useGlobalClickSound();
+  useScrollReveal();
   return (
     <QueryClientProvider client={queryClient}>
       <Header />
