@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { useGlobalClickSound } from "@/hooks/useClickSound";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
@@ -106,7 +107,7 @@ function Header() {
         </Link>
         <nav className="flex items-center gap-2">
           {isAdmin && (
-            <Link to="/admin" className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground hover:scale-105 transition">
+            <Link to="/admin" className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground hover:scale-105 transition animate-pop shadow-sky">
               <Shield className="h-3.5 w-3.5" /> Admin
             </Link>
           )}
@@ -131,6 +132,7 @@ function Header() {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useGlobalClickSound();
+  useScrollReveal();
   return (
     <QueryClientProvider client={queryClient}>
       <Header />
