@@ -38,7 +38,7 @@ function AuthPage() {
         toast.success("Welcome back!");
       }
       // RPC to claim admin if applicable
-      await supabase.rpc("claim_admin_role").catch(() => {});
+      try { await supabase.rpc("claim_admin_role"); } catch { /* ignore */ }
       navigate({ to: "/" });
     } catch (err: any) {
       toast.error(err.message ?? "Authentication failed");
