@@ -104,7 +104,7 @@ function Home() {
       </section>
 
       {/* Latest products */}
-      <section>
+      <section className="reveal">
         <h2 className="font-display text-2xl font-bold mb-4">Latest products</h2>
         {productsQ.isLoading ? (
           <SkeletonGrid />
