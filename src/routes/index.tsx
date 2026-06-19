@@ -73,7 +73,7 @@ function Home() {
       )}
 
       {/* Categories */}
-      <section>
+      <section className="reveal">
         <div className="mb-4 flex items-baseline justify-between">
           <h2 className="font-display text-2xl font-bold">Categories</h2>
           <span className="text-xs text-muted-foreground">{categoriesQ.data?.length ?? 0} total</span>
