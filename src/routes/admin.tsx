@@ -204,9 +204,10 @@ function ProductForm({ categories, editing, onDone }: { categories: any[]; editi
   const [price, setPrice] = useState("");
   const [categoryId, setCategoryId] = useState<string>("");
   const [productLink, setProductLink] = useState("");
-  const [imagePath, setImagePath] = useState<string | null>(null);
+  const [imagePaths, setImagePaths] = useState<string[]>([]);
   const [videoPath, setVideoPath] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingImg, setUploadingImg] = useState(false);
 
   useEffect(() => {
     if (editing) {
@@ -215,24 +216,46 @@ function ProductForm({ categories, editing, onDone }: { categories: any[]; editi
       setPrice(String(editing.price ?? ""));
       setCategoryId(editing.category_id ?? "");
       setProductLink(editing.product_link ?? "");
-      setImagePath(editing.image_url ?? null);
+      const extras: string[] = Array.isArray(editing.image_urls) ? editing.image_urls : [];
+      const combined = editing.image_url ? [editing.image_url, ...extras.filter((x) => x !== editing.image_url)] : extras;
+      setImagePaths(combined);
       setVideoPath(editing.video_url ?? null);
     }
   }, [editing]);
 
   function reset() {
     setName(""); setDescription(""); setPrice(""); setCategoryId("");
-    setProductLink(""); setImagePath(null); setVideoPath(null);
+    setProductLink(""); setImagePaths([]); setVideoPath(null);
   }
 
-  async function handleFile(file: File, kind: "image" | "video") {
+  async function handleImages(files: FileList) {
+    setUploadingImg(true);
     try {
-      const path = await uploadMedia(file, kind);
-      if (kind === "image") setImagePath(path); else setVideoPath(path);
-      toast.success(`${kind} uploaded`);
+      const uploaded: string[] = [];
+      for (const f of Array.from(files)) {
+        uploaded.push(await uploadMedia(f, "image"));
+      }
+      setImagePaths((prev) => [...prev, ...uploaded]);
+      toast.success(`${uploaded.length} image(s) uploaded`);
+    } catch (e: any) {
+      toast.error(e.message ?? "Upload failed");
+    } finally {
+      setUploadingImg(false);
+    }
+  }
+
+  async function handleVideo(file: File) {
+    try {
+      const path = await uploadMedia(file, "video");
+      setVideoPath(path);
+      toast.success("video uploaded");
     } catch (e: any) {
       toast.error(e.message ?? "Upload failed");
     }
+  }
+
+  function removeImage(idx: number) {
+    setImagePaths((prev) => prev.filter((_, i) => i !== idx));
   }
 
   async function submit(e: React.FormEvent) {
@@ -245,7 +268,8 @@ function ProductForm({ categories, editing, onDone }: { categories: any[]; editi
       price: Number(price) || 0,
       category_id: categoryId || null,
       product_link: productLink || null,
-      image_url: imagePath,
+      image_url: imagePaths[0] ?? null,
+      image_urls: imagePaths,
       video_url: videoPath,
     };
     const op = editing
@@ -279,8 +303,8 @@ function ProductForm({ categories, editing, onDone }: { categories: any[]; editi
         <Input value={productLink} onChange={setProductLink} placeholder="External product link (https://…)" />
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
-        <FileField label="Image" accept="image/*" current={imagePath} onPick={(f) => handleFile(f, "image")} onClear={() => setImagePath(null)} />
-        <FileField label="Video" accept="video/*" current={videoPath} onPick={(f) => handleFile(f, "video")} onClear={() => setVideoPath(null)} />
+        <MultiImageField paths={imagePaths} onPick={handleImages} onRemove={removeImage} uploading={uploadingImg} />
+        <FileField label="Video" accept="video/*" current={videoPath} onPick={handleVideo} onClear={() => setVideoPath(null)} />
       </div>
       <div className="flex gap-2 pt-2">
         <button disabled={saving} className="rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sky disabled:opacity-60">
@@ -406,6 +430,40 @@ function FileField({ label, accept, current, onPick, onClear }: { label: string;
       ) : (
         <input type="file" accept={accept} onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])} className="text-xs" />
       )}
+    </div>
+  );
+}
+
+function MultiImageField({ paths, onPick, onRemove, uploading }: { paths: string[]; onPick: (files: FileList) => void; onRemove: (i: number) => void; uploading: boolean }) {
+  return (
+    <div className="rounded-xl border bg-card p-3 text-sm space-y-2">
+      <div className="font-semibold">Images ({paths.length}) — first is the cover</div>
+      {paths.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {paths.map((p, i) => (
+            <MiniThumb key={p + i} path={p} onRemove={() => onRemove(i)} primary={i === 0} />
+          ))}
+        </div>
+      )}
+      <input
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={(e) => e.target.files && e.target.files.length > 0 && onPick(e.target.files)}
+        className="text-xs"
+      />
+      {uploading && <div className="text-xs text-muted-foreground">Uploading…</div>}
+    </div>
+  );
+}
+
+function MiniThumb({ path, onRemove, primary }: { path: string; onRemove: () => void; primary: boolean }) {
+  const url = useResolvedMedia(path);
+  return (
+    <div className="relative h-16 w-16 overflow-hidden rounded-lg border bg-secondary">
+      {url && <img src={url} alt="" className="h-full w-full object-cover" />}
+      {primary && <span className="absolute left-0 top-0 bg-primary px-1 text-[9px] font-bold text-primary-foreground rounded-br">★</span>}
+      <button type="button" onClick={onRemove} className="absolute right-0 top-0 bg-destructive/90 px-1 text-[10px] font-bold text-destructive-foreground rounded-bl">×</button>
     </div>
   );
 }
