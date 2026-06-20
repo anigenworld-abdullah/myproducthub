@@ -25,6 +25,7 @@ function ProductPage() {
   });
 
   const video = useResolvedMedia(q.data?.video_url);
+  const { format } = useCurrency();
 
   if (q.isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
   if (!q.data) return <div className="text-sm text-muted-foreground">Product not found.</div>;
