@@ -204,9 +204,10 @@ function ProductForm({ categories, editing, onDone }: { categories: any[]; editi
   const [price, setPrice] = useState("");
   const [categoryId, setCategoryId] = useState<string>("");
   const [productLink, setProductLink] = useState("");
-  const [imagePath, setImagePath] = useState<string | null>(null);
+  const [imagePaths, setImagePaths] = useState<string[]>([]);
   const [videoPath, setVideoPath] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingImg, setUploadingImg] = useState(false);
 
   useEffect(() => {
     if (editing) {
@@ -215,24 +216,46 @@ function ProductForm({ categories, editing, onDone }: { categories: any[]; editi
       setPrice(String(editing.price ?? ""));
       setCategoryId(editing.category_id ?? "");
       setProductLink(editing.product_link ?? "");
-      setImagePath(editing.image_url ?? null);
+      const extras: string[] = Array.isArray(editing.image_urls) ? editing.image_urls : [];
+      const combined = editing.image_url ? [editing.image_url, ...extras.filter((x) => x !== editing.image_url)] : extras;
+      setImagePaths(combined);
       setVideoPath(editing.video_url ?? null);
     }
   }, [editing]);
 
   function reset() {
     setName(""); setDescription(""); setPrice(""); setCategoryId("");
-    setProductLink(""); setImagePath(null); setVideoPath(null);
+    setProductLink(""); setImagePaths([]); setVideoPath(null);
   }
 
-  async function handleFile(file: File, kind: "image" | "video") {
+  async function handleImages(files: FileList) {
+    setUploadingImg(true);
     try {
-      const path = await uploadMedia(file, kind);
-      if (kind === "image") setImagePath(path); else setVideoPath(path);
-      toast.success(`${kind} uploaded`);
+      const uploaded: string[] = [];
+      for (const f of Array.from(files)) {
+        uploaded.push(await uploadMedia(f, "image"));
+      }
+      setImagePaths((prev) => [...prev, ...uploaded]);
+      toast.success(`${uploaded.length} image(s) uploaded`);
+    } catch (e: any) {
+      toast.error(e.message ?? "Upload failed");
+    } finally {
+      setUploadingImg(false);
+    }
+  }
+
+  async function handleVideo(file: File) {
+    try {
+      const path = await uploadMedia(file, "video");
+      setVideoPath(path);
+      toast.success("video uploaded");
     } catch (e: any) {
       toast.error(e.message ?? "Upload failed");
     }
+  }
+
+  function removeImage(idx: number) {
+    setImagePaths((prev) => prev.filter((_, i) => i !== idx));
   }
 
   async function submit(e: React.FormEvent) {
