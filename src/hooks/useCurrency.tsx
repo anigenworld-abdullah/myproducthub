@@ -20,7 +20,7 @@ export type CurrencyCode = (typeof CURRENCIES)[number]["code"];
 type Ctx = {
   code: CurrencyCode;
   setCode: (c: CurrencyCode) => void;
-  format: (usd: number) => string;
+  format: (amount: number, from?: CurrencyCode) => string;
 };
 
 const CurrencyContext = createContext<Ctx | null>(null);
@@ -39,9 +39,12 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") localStorage.setItem(STORAGE_KEY, c);
   }
 
-  function format(usd: number) {
+  function format(amount: number, from: CurrencyCode = "USD") {
+    const src = CURRENCIES.find((c) => c.code === from) ?? CURRENCIES[0];
     const cur = CURRENCIES.find((c) => c.code === code) ?? CURRENCIES[0];
-    const value = Number(usd) * cur.rate;
+    // Convert source -> USD -> target
+    const usd = Number(amount) / src.rate;
+    const value = usd * cur.rate;
     const isWhole = cur.code === "JPY" || cur.code === "INR" || cur.code === "PKR";
     const formatted = isWhole
       ? Math.round(value).toLocaleString()
