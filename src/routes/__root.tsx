@@ -137,14 +137,16 @@ function RootComponent() {
   useScrollReveal();
   return (
     <QueryClientProvider client={queryClient}>
-      <Header />
-      <main className="mx-auto max-w-6xl px-4 py-6 animate-fade-in">
-        <Outlet />
-      </main>
-      <footer className="mt-16 border-t border-border/60 py-8 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Products Hub — built with sky-blue clarity.
-      </footer>
-      <Toaster />
+      <CurrencyProvider>
+        <Header />
+        <main className="mx-auto max-w-6xl px-4 py-6 animate-fade-in">
+          <Outlet />
+        </main>
+        <footer className="mt-16 border-t border-border/60 py-8 text-center text-xs text-muted-foreground">
+          © {new Date().getFullYear()} Products Hub — built with sky-blue clarity.
+        </footer>
+        <Toaster />
+      </CurrencyProvider>
     </QueryClientProvider>
   );
 }
