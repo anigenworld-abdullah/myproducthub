@@ -5,8 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { uploadMedia } from "@/lib/media";
 import { useResolvedMedia } from "@/hooks/useResolvedMedia";
+import { useCurrency } from "@/hooks/useCurrency";
 import { toast } from "sonner";
-import { Plus, Trash2, Megaphone, Tag, Package, Pencil } from "lucide-react";
+import { Plus, Trash2, Megaphone, Tag, Package, Pencil, Save, X } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
