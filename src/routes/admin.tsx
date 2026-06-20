@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { uploadMedia } from "@/lib/media";
 import { useResolvedMedia } from "@/hooks/useResolvedMedia";
-import { useCurrency } from "@/hooks/useCurrency";
+import { useCurrency, CURRENCIES, type CurrencyCode } from "@/hooks/useCurrency";
 import { toast } from "sonner";
 import { Plus, Trash2, Megaphone, Tag, Package, Pencil, Save, X } from "lucide-react";
 
@@ -226,7 +226,11 @@ function AdminProductRow({ p, onEdit, onDelete }: { p: any; onEdit: () => void; 
       </div>
       <div className="flex-1 min-w-0">
         <div className="font-semibold truncate">{p.name}</div>
-        <div className="text-xs text-muted-foreground">{format(Number(p.price))} · {p.categories?.name ?? "—"}</div>
+        <div className="text-xs text-muted-foreground">
+          {format(Number(p.price), (p.price_currency ?? "USD") as CurrencyCode)}
+          <span className="opacity-60"> · entered {p.price_currency ?? "USD"} {Number(p.price)}</span>
+          {" · "}{p.categories?.name ?? "—"}
+        </div>
         <div className="mt-2 flex gap-1">
           <button onClick={onEdit} className="rounded-md p-1.5 hover:bg-accent"><Pencil className="h-3.5 w-3.5" /></button>
           <button onClick={onDelete} className="rounded-md p-1.5 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></button>
@@ -237,9 +241,11 @@ function AdminProductRow({ p, onEdit, onDelete }: { p: any; onEdit: () => void; 
 }
 
 function ProductForm({ categories, editing, onDone }: { categories: any[]; editing: any | null; onDone: () => void }) {
+  const { code: viewerCode } = useCurrency();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [priceCurrency, setPriceCurrency] = useState<CurrencyCode>(viewerCode);
   const [categoryId, setCategoryId] = useState<string>("");
   const [productLink, setProductLink] = useState("");
   const [imagePaths, setImagePaths] = useState<string[]>([]);
@@ -252,6 +258,7 @@ function ProductForm({ categories, editing, onDone }: { categories: any[]; editi
       setName(editing.name ?? "");
       setDescription(editing.description ?? "");
       setPrice(String(editing.price ?? ""));
+      setPriceCurrency((editing.price_currency ?? "USD") as CurrencyCode);
       setCategoryId(editing.category_id ?? "");
       setProductLink(editing.product_link ?? "");
       const extras: string[] = Array.isArray(editing.image_urls) ? editing.image_urls : [];
@@ -262,7 +269,7 @@ function ProductForm({ categories, editing, onDone }: { categories: any[]; editi
   }, [editing]);
 
   function reset() {
-    setName(""); setDescription(""); setPrice(""); setCategoryId("");
+    setName(""); setDescription(""); setPrice(""); setPriceCurrency(viewerCode); setCategoryId("");
     setProductLink(""); setImagePaths([]); setVideoPath(null);
   }
 
@@ -304,6 +311,7 @@ function ProductForm({ categories, editing, onDone }: { categories: any[]; editi
       name: name.trim(),
       description: description || null,
       price: Number(price) || 0,
+      price_currency: priceCurrency,
       category_id: categoryId || null,
       product_link: productLink || null,
       image_url: imagePaths[0] ?? null,
@@ -324,10 +332,23 @@ function ProductForm({ categories, editing, onDone }: { categories: any[]; editi
   return (
     <form onSubmit={submit} className="rounded-2xl border bg-background p-4 space-y-3">
       <div className="font-semibold">{editing ? "Edit product" : "Add new product"}</div>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-[1fr_140px_120px]">
         <Input value={name} onChange={setName} placeholder="Product name *" />
         <Input value={price} onChange={setPrice} placeholder="Price" type="number" />
+        <select
+          value={priceCurrency}
+          onChange={(e) => setPriceCurrency(e.target.value as CurrencyCode)}
+          title="Currency you are entering the price in"
+          className="rounded-xl border bg-background px-3 py-2 text-sm cursor-pointer"
+        >
+          {CURRENCIES.map((c) => (
+            <option key={c.code} value={c.code}>{c.symbol} {c.code}</option>
+          ))}
+        </select>
       </div>
+      <p className="text-[11px] text-muted-foreground -mt-1">
+        Enter the price in any currency — visitors will see it auto-converted to whichever currency they pick in the header.
+      </p>
       <Textarea value={description} onChange={setDescription} placeholder="Description" />
       <div className="grid gap-3 sm:grid-cols-2">
         <select
