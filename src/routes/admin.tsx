@@ -268,7 +268,8 @@ function ProductForm({ categories, editing, onDone }: { categories: any[]; editi
       price: Number(price) || 0,
       category_id: categoryId || null,
       product_link: productLink || null,
-      image_url: imagePath,
+      image_url: imagePaths[0] ?? null,
+      image_urls: imagePaths,
       video_url: videoPath,
     };
     const op = editing
