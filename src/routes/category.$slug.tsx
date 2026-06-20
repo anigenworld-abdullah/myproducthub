@@ -82,7 +82,7 @@ function Card({ product, index }: { product: any; index: number }) {
       </div>
       <div className="p-3">
         <h3 className="font-semibold line-clamp-2 text-sm">{product.name}</h3>
-        <div className="mt-2 font-display text-base font-bold text-primary">{format(Number(product.price))}</div>
+        <div className="mt-2 font-display text-base font-bold text-primary">{format(Number(product.price), product.price_currency ?? "USD")}</div>
       </div>
     </Link>
   );
