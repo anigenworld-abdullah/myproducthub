@@ -30,6 +30,9 @@ function ProductPage() {
   if (!q.data) return <div className="text-sm text-muted-foreground">Product not found.</div>;
 
   const p = q.data;
+  const extras: string[] = Array.isArray((p as any).image_urls) ? (p as any).image_urls : [];
+  const allImages = Array.from(new Set([p.image_url, ...extras].filter(Boolean))) as string[];
+
   return (
     <article className="space-y-6 animate-fade-in">
       <Link to="/" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
@@ -38,9 +41,11 @@ function ProductPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-4">
-          {img && (
-            <div className="overflow-hidden rounded-3xl bg-secondary shadow-sky">
-              <img src={img} alt={p.name} className="w-full object-cover" />
+          {allImages.length > 0 && (
+            <div className="columns-1 sm:columns-2 gap-3 [column-fill:_balance]">
+              {allImages.map((path, i) => (
+                <GalleryImage key={path + i} path={path} alt={`${p.name} ${i + 1}`} />
+              ))}
             </div>
           )}
           {video && (
