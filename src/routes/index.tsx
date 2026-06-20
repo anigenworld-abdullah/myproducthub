@@ -153,7 +153,7 @@ function ProductCard({ product, index }: { product: any; index: number }) {
       <div className="p-3">
         <h3 className="font-semibold leading-tight line-clamp-2 text-sm">{product.name}</h3>
         <div className="mt-2 flex items-center justify-between">
-          <span className="font-display text-base font-bold text-primary">${Number(product.price).toFixed(2)}</span>
+          <span className="font-display text-base font-bold text-primary">{format(Number(product.price))}</span>
           <span className="text-[11px] text-primary opacity-70 group-hover:opacity-100">View →</span>
         </div>
       </div>
