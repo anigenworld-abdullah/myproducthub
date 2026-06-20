@@ -23,7 +23,6 @@ function ProductPage() {
     },
   });
 
-  const img = useResolvedMedia(q.data?.image_url);
   const video = useResolvedMedia(q.data?.video_url);
 
   if (q.isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
