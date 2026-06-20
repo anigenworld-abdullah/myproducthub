@@ -32,7 +32,7 @@ function Home() {
         .from("products")
         .select("*, categories(name, slug)")
         .order("created_at", { ascending: false })
-        .limit(12);
+        .limit(40);
       if (error) throw error;
       return data;
     },
