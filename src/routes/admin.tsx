@@ -412,20 +412,10 @@ function AdsAdmin() {
       </form>
       <div className="space-y-2">
         {list.data?.map((a) => (
-          <div key={a.id} className="flex items-center justify-between rounded-xl border bg-background p-3">
-            <div>
-              <div className="font-semibold">{a.title}</div>
-              <div className="text-xs text-muted-foreground truncate max-w-[18rem]">{a.link_url ?? "—"}</div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button onClick={() => toggle(a.id, a.active)} className={`rounded-full px-3 py-1 text-xs font-semibold ${a.active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                {a.active ? "Active" : "Inactive"}
-              </button>
-              <button onClick={() => remove(a.id)} className="rounded-md p-1.5 text-destructive hover:bg-destructive/10">
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
+          <AdRow key={a.id} a={a} onChanged={() => {
+            qc.invalidateQueries({ queryKey: ["admin-ads"] });
+            qc.invalidateQueries({ queryKey: ["ads", "active"] });
+          }} onToggle={() => toggle(a.id, a.active)} onDelete={() => remove(a.id)} />
         ))}
         {list.data?.length === 0 && <p className="text-sm text-muted-foreground">No ads yet.</p>}
       </div>
