@@ -63,7 +63,7 @@ function ProductPage() {
             </Link>
           )}
           <h1 className="font-display text-3xl sm:text-5xl font-bold leading-tight">{p.name}</h1>
-          <div className="font-display text-3xl font-bold text-primary">${Number(p.price).toFixed(2)}</div>
+          <div className="font-display text-3xl font-bold text-primary">{format(Number(p.price))}</div>
           {p.description && <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{p.description}</p>}
 
           {p.product_link && (
