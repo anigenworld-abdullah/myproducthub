@@ -423,6 +423,59 @@ function AdsAdmin() {
   );
 }
 
+function AdRow({ a, onChanged, onToggle, onDelete }: { a: any; onChanged: () => void; onToggle: () => void; onDelete: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(a.title);
+  const [link, setLink] = useState(a.link_url ?? "");
+  const [imagePath, setImagePath] = useState<string | null>(a.image_url ?? null);
+
+  async function save() {
+    if (!title.trim()) return toast.error("Title required");
+    const { error } = await supabase.from("ads").update({
+      title: title.trim(), link_url: link || null, image_url: imagePath,
+    }).eq("id", a.id);
+    if (error) return toast.error(error.message);
+    toast.success("Updated");
+    setEditing(false);
+    onChanged();
+  }
+
+  async function handleFile(file: File) {
+    try { setImagePath(await uploadMedia(file, "ads")); toast.success("Image uploaded"); }
+    catch (e: any) { toast.error(e.message ?? "Upload failed"); }
+  }
+
+  if (editing) {
+    return (
+      <div className="rounded-xl border bg-background p-3 space-y-2">
+        <Input value={title} onChange={setTitle} placeholder="Title" />
+        <Input value={link} onChange={setLink} placeholder="Link URL" />
+        <FileField label="Image" accept="image/*" current={imagePath} onPick={handleFile} onClear={() => setImagePath(null)} />
+        <div className="flex gap-2">
+          <button onClick={save} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"><Save className="inline h-3.5 w-3.5" /> Save</button>
+          <button onClick={() => { setEditing(false); setTitle(a.title); setLink(a.link_url ?? ""); setImagePath(a.image_url ?? null); }} className="rounded-lg border px-3 py-1.5 text-xs"><X className="inline h-3.5 w-3.5" /> Cancel</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between rounded-xl border bg-background p-3">
+      <div className="min-w-0">
+        <div className="font-semibold truncate">{a.title}</div>
+        <div className="text-xs text-muted-foreground truncate max-w-[18rem]">{a.link_url ?? "—"}</div>
+      </div>
+      <div className="flex items-center gap-2">
+        <button onClick={onToggle} className={`rounded-full px-3 py-1 text-xs font-semibold ${a.active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+          {a.active ? "Active" : "Inactive"}
+        </button>
+        <button onClick={() => setEditing(true)} className="rounded-md p-1.5 hover:bg-accent"><Pencil className="h-4 w-4" /></button>
+        <button onClick={onDelete} className="rounded-md p-1.5 text-destructive hover:bg-destructive/10"><Trash2 className="h-4 w-4" /></button>
+      </div>
+    </div>
+  );
+}
+
 // ---------------- Shared inputs ----------------
 function Input({ value, onChange, placeholder, type = "text" }: { value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) {
   return (
