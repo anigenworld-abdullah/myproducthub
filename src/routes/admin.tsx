@@ -433,3 +433,37 @@ function FileField({ label, accept, current, onPick, onClear }: { label: string;
     </div>
   );
 }
+
+function MultiImageField({ paths, onPick, onRemove, uploading }: { paths: string[]; onPick: (files: FileList) => void; onRemove: (i: number) => void; uploading: boolean }) {
+  return (
+    <div className="rounded-xl border bg-card p-3 text-sm space-y-2">
+      <div className="font-semibold">Images ({paths.length}) — first is the cover</div>
+      {paths.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {paths.map((p, i) => (
+            <MiniThumb key={p + i} path={p} onRemove={() => onRemove(i)} primary={i === 0} />
+          ))}
+        </div>
+      )}
+      <input
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={(e) => e.target.files && e.target.files.length > 0 && onPick(e.target.files)}
+        className="text-xs"
+      />
+      {uploading && <div className="text-xs text-muted-foreground">Uploading…</div>}
+    </div>
+  );
+}
+
+function MiniThumb({ path, onRemove, primary }: { path: string; onRemove: () => void; primary: boolean }) {
+  const url = useResolvedMedia(path);
+  return (
+    <div className="relative h-16 w-16 overflow-hidden rounded-lg border bg-secondary">
+      {url && <img src={url} alt="" className="h-full w-full object-cover" />}
+      {primary && <span className="absolute left-0 top-0 bg-primary px-1 text-[9px] font-bold text-primary-foreground rounded-br">★</span>}
+      <button type="button" onClick={onRemove} className="absolute right-0 top-0 bg-destructive/90 px-1 text-[10px] font-bold text-destructive-foreground rounded-bl">×</button>
+    </div>
+  );
+}
