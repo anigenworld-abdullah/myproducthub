@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useResolvedMedia } from "@/hooks/useResolvedMedia";
+import { useCurrency } from "@/hooks/useCurrency";
 import { ArrowRight, Tag, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/")({
