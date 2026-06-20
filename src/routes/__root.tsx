@@ -16,6 +16,7 @@ import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
+import { CurrencyProvider, CurrencySelector } from "@/hooks/useCurrency";
 import { ShoppingBag, Shield, LogIn, LogOut, Sparkles } from "lucide-react";
 
 function NotFoundComponent() {
