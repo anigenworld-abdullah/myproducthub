@@ -124,6 +124,7 @@ function Home() {
 function ProductCard({ product, index }: { product: any; index: number }) {
   const cover = product.image_url ?? (Array.isArray(product.image_urls) ? product.image_urls[0] : null);
   const img = useResolvedMedia(cover);
+  const { format } = useCurrency();
   const extraCount = Array.isArray(product.image_urls) ? Math.max(0, product.image_urls.length - 1) : 0;
   return (
     <Link
