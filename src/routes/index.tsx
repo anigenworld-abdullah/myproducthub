@@ -111,7 +111,7 @@ function Home() {
         ) : !productsQ.data || productsQ.data.length === 0 ? (
           <EmptyState text="No products yet — the admin will add them shortly." />
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="columns-2 sm:columns-3 lg:columns-4 gap-4 [column-fill:_balance]">
             {productsQ.data.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
           </div>
         )}
@@ -121,32 +121,38 @@ function Home() {
 }
 
 function ProductCard({ product, index }: { product: any; index: number }) {
-  const img = useResolvedMedia(product.image_url);
+  const cover = product.image_url ?? (Array.isArray(product.image_urls) ? product.image_urls[0] : null);
+  const img = useResolvedMedia(cover);
+  const extraCount = Array.isArray(product.image_urls) ? Math.max(0, product.image_urls.length - 1) : 0;
   return (
     <Link
       to="/product/$id"
       params={{ id: product.id }}
-      style={{ animationDelay: `${index * 50}ms` }}
-      className="group block overflow-hidden rounded-2xl border bg-card shadow-card hover-lift animate-slide-up"
+      style={{ animationDelay: `${index * 35}ms` }}
+      className="group mb-4 break-inside-avoid block overflow-hidden rounded-2xl border bg-card shadow-card hover-lift animate-slide-up"
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-secondary">
+      <div className="relative overflow-hidden bg-secondary">
         {img ? (
-          <img src={img} alt={product.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+          <img src={img} alt={product.name} loading="lazy" className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-muted-foreground text-xs">No image</div>
+          <div className="flex aspect-[4/3] items-center justify-center text-muted-foreground text-xs">No image</div>
         )}
         {product.categories?.name && (
           <span className="absolute top-2 left-2 rounded-full bg-white/85 px-2 py-0.5 text-[10px] font-semibold backdrop-blur">
             {product.categories.name}
           </span>
         )}
+        {extraCount > 0 && (
+          <span className="absolute top-2 right-2 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur">
+            +{extraCount}
+          </span>
+        )}
       </div>
-      <div className="p-4">
-        <h3 className="font-semibold leading-tight line-clamp-1">{product.name}</h3>
-        {product.description && <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{product.description}</p>}
-        <div className="mt-3 flex items-center justify-between">
-          <span className="font-display text-lg font-bold text-primary">${Number(product.price).toFixed(2)}</span>
-          <span className="text-xs text-primary opacity-70 group-hover:opacity-100">View →</span>
+      <div className="p-3">
+        <h3 className="font-semibold leading-tight line-clamp-2 text-sm">{product.name}</h3>
+        <div className="mt-2 flex items-center justify-between">
+          <span className="font-display text-base font-bold text-primary">${Number(product.price).toFixed(2)}</span>
+          <span className="text-[11px] text-primary opacity-70 group-hover:opacity-100">View →</span>
         </div>
       </div>
     </Link>
