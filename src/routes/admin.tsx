@@ -303,8 +303,8 @@ function ProductForm({ categories, editing, onDone }: { categories: any[]; editi
         <Input value={productLink} onChange={setProductLink} placeholder="External product link (https://…)" />
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
-        <FileField label="Image" accept="image/*" current={imagePath} onPick={(f) => handleFile(f, "image")} onClear={() => setImagePath(null)} />
-        <FileField label="Video" accept="video/*" current={videoPath} onPick={(f) => handleFile(f, "video")} onClear={() => setVideoPath(null)} />
+        <MultiImageField paths={imagePaths} onPick={handleImages} onRemove={removeImage} uploading={uploadingImg} />
+        <FileField label="Video" accept="video/*" current={videoPath} onPick={handleVideo} onClear={() => setVideoPath(null)} />
       </div>
       <div className="flex gap-2 pt-2">
         <button disabled={saving} className="rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sky disabled:opacity-60">
