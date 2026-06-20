@@ -78,6 +78,7 @@ export type Database = {
           image_urls: string[]
           name: string
           price: number
+          price_currency: string
           product_link: string | null
           updated_at: string
           video_url: string | null
@@ -91,6 +92,7 @@ export type Database = {
           image_urls?: string[]
           name: string
           price?: number
+          price_currency?: string
           product_link?: string | null
           updated_at?: string
           video_url?: string | null
@@ -104,6 +106,7 @@ export type Database = {
           image_urls?: string[]
           name?: string
           price?: number
+          price_currency?: string
           product_link?: string | null
           updated_at?: string
           video_url?: string | null
