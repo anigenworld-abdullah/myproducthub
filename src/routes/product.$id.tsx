@@ -81,3 +81,13 @@ function ProductPage() {
     </article>
   );
 }
+
+function GalleryImage({ path, alt }: { path: string; alt: string }) {
+  const url = useResolvedMedia(path);
+  if (!url) return <div className="mb-3 break-inside-avoid aspect-square rounded-2xl bg-secondary animate-pulse" />;
+  return (
+    <div className="mb-3 break-inside-avoid overflow-hidden rounded-2xl bg-secondary shadow-card">
+      <img src={url} alt={alt} loading="lazy" className="w-full h-auto object-cover" />
+    </div>
+  );
+}
