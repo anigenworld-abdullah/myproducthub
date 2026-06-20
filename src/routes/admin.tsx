@@ -5,8 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { uploadMedia } from "@/lib/media";
 import { useResolvedMedia } from "@/hooks/useResolvedMedia";
+import { useCurrency } from "@/hooks/useCurrency";
 import { toast } from "sonner";
-import { Plus, Trash2, Megaphone, Tag, Package, Pencil } from "lucide-react";
+import { Plus, Trash2, Megaphone, Tag, Package, Pencil, Save, X } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -114,17 +115,53 @@ function CategoriesAdmin() {
       </form>
       <div className="divide-y">
         {list.data?.map((c) => (
-          <div key={c.id} className="flex items-center justify-between py-3">
-            <div>
-              <div className="font-semibold">{c.name}</div>
-              <div className="text-xs text-muted-foreground">/{c.slug}{c.description ? ` — ${c.description}` : ""}</div>
-            </div>
-            <button onClick={() => remove(c.id)} className="rounded-lg p-2 text-destructive hover:bg-destructive/10">
-              <Trash2 className="h-4 w-4" />
-            </button>
-          </div>
+          <CategoryRow key={c.id} c={c} onChanged={() => {
+            qc.invalidateQueries({ queryKey: ["admin-categories"] });
+            qc.invalidateQueries({ queryKey: ["categories"] });
+          }} onDelete={() => remove(c.id)} />
         ))}
         {list.data?.length === 0 && <p className="text-sm text-muted-foreground py-3">No categories yet.</p>}
+      </div>
+    </div>
+  );
+}
+
+function CategoryRow({ c, onChanged, onDelete }: { c: any; onChanged: () => void; onDelete: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(c.name);
+  const [desc, setDesc] = useState(c.description ?? "");
+
+  async function save() {
+    if (!name.trim()) return toast.error("Name required");
+    const slug = name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const { error } = await supabase.from("categories").update({ name: name.trim(), slug, description: desc || null }).eq("id", c.id);
+    if (error) return toast.error(error.message);
+    toast.success("Updated");
+    setEditing(false);
+    onChanged();
+  }
+
+  if (editing) {
+    return (
+      <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] py-3">
+        <Input value={name} onChange={setName} placeholder="Name" />
+        <Input value={desc} onChange={setDesc} placeholder="Description" />
+        <div className="flex gap-1">
+          <button onClick={save} className="rounded-lg bg-primary p-2 text-primary-foreground"><Save className="h-4 w-4" /></button>
+          <button onClick={() => { setEditing(false); setName(c.name); setDesc(c.description ?? ""); }} className="rounded-lg border p-2"><X className="h-4 w-4" /></button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center justify-between py-3">
+      <div>
+        <div className="font-semibold">{c.name}</div>
+        <div className="text-xs text-muted-foreground">/{c.slug}{c.description ? ` — ${c.description}` : ""}</div>
+      </div>
+      <div className="flex gap-1">
+        <button onClick={() => setEditing(true)} className="rounded-lg p-2 hover:bg-accent"><Pencil className="h-4 w-4" /></button>
+        <button onClick={onDelete} className="rounded-lg p-2 text-destructive hover:bg-destructive/10"><Trash2 className="h-4 w-4" /></button>
       </div>
     </div>
   );
@@ -181,6 +218,7 @@ function ProductsAdmin() {
 
 function AdminProductRow({ p, onEdit, onDelete }: { p: any; onEdit: () => void; onDelete: () => void }) {
   const img = useResolvedMedia(p.image_url);
+  const { format } = useCurrency();
   return (
     <div className="flex gap-3 rounded-2xl border bg-background p-3">
       <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-secondary">
@@ -188,7 +226,7 @@ function AdminProductRow({ p, onEdit, onDelete }: { p: any; onEdit: () => void; 
       </div>
       <div className="flex-1 min-w-0">
         <div className="font-semibold truncate">{p.name}</div>
-        <div className="text-xs text-muted-foreground">${Number(p.price).toFixed(2)} · {p.categories?.name ?? "—"}</div>
+        <div className="text-xs text-muted-foreground">{format(Number(p.price))} · {p.categories?.name ?? "—"}</div>
         <div className="mt-2 flex gap-1">
           <button onClick={onEdit} className="rounded-md p-1.5 hover:bg-accent"><Pencil className="h-3.5 w-3.5" /></button>
           <button onClick={onDelete} className="rounded-md p-1.5 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></button>
@@ -374,22 +412,65 @@ function AdsAdmin() {
       </form>
       <div className="space-y-2">
         {list.data?.map((a) => (
-          <div key={a.id} className="flex items-center justify-between rounded-xl border bg-background p-3">
-            <div>
-              <div className="font-semibold">{a.title}</div>
-              <div className="text-xs text-muted-foreground truncate max-w-[18rem]">{a.link_url ?? "—"}</div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button onClick={() => toggle(a.id, a.active)} className={`rounded-full px-3 py-1 text-xs font-semibold ${a.active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                {a.active ? "Active" : "Inactive"}
-              </button>
-              <button onClick={() => remove(a.id)} className="rounded-md p-1.5 text-destructive hover:bg-destructive/10">
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
+          <AdRow key={a.id} a={a} onChanged={() => {
+            qc.invalidateQueries({ queryKey: ["admin-ads"] });
+            qc.invalidateQueries({ queryKey: ["ads", "active"] });
+          }} onToggle={() => toggle(a.id, a.active)} onDelete={() => remove(a.id)} />
         ))}
         {list.data?.length === 0 && <p className="text-sm text-muted-foreground">No ads yet.</p>}
+      </div>
+    </div>
+  );
+}
+
+function AdRow({ a, onChanged, onToggle, onDelete }: { a: any; onChanged: () => void; onToggle: () => void; onDelete: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(a.title);
+  const [link, setLink] = useState(a.link_url ?? "");
+  const [imagePath, setImagePath] = useState<string | null>(a.image_url ?? null);
+
+  async function save() {
+    if (!title.trim()) return toast.error("Title required");
+    const { error } = await supabase.from("ads").update({
+      title: title.trim(), link_url: link || null, image_url: imagePath,
+    }).eq("id", a.id);
+    if (error) return toast.error(error.message);
+    toast.success("Updated");
+    setEditing(false);
+    onChanged();
+  }
+
+  async function handleFile(file: File) {
+    try { setImagePath(await uploadMedia(file, "ads")); toast.success("Image uploaded"); }
+    catch (e: any) { toast.error(e.message ?? "Upload failed"); }
+  }
+
+  if (editing) {
+    return (
+      <div className="rounded-xl border bg-background p-3 space-y-2">
+        <Input value={title} onChange={setTitle} placeholder="Title" />
+        <Input value={link} onChange={setLink} placeholder="Link URL" />
+        <FileField label="Image" accept="image/*" current={imagePath} onPick={handleFile} onClear={() => setImagePath(null)} />
+        <div className="flex gap-2">
+          <button onClick={save} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"><Save className="inline h-3.5 w-3.5" /> Save</button>
+          <button onClick={() => { setEditing(false); setTitle(a.title); setLink(a.link_url ?? ""); setImagePath(a.image_url ?? null); }} className="rounded-lg border px-3 py-1.5 text-xs"><X className="inline h-3.5 w-3.5" /> Cancel</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between rounded-xl border bg-background p-3">
+      <div className="min-w-0">
+        <div className="font-semibold truncate">{a.title}</div>
+        <div className="text-xs text-muted-foreground truncate max-w-[18rem]">{a.link_url ?? "—"}</div>
+      </div>
+      <div className="flex items-center gap-2">
+        <button onClick={onToggle} className={`rounded-full px-3 py-1 text-xs font-semibold ${a.active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+          {a.active ? "Active" : "Inactive"}
+        </button>
+        <button onClick={() => setEditing(true)} className="rounded-md p-1.5 hover:bg-accent"><Pencil className="h-4 w-4" /></button>
+        <button onClick={onDelete} className="rounded-md p-1.5 text-destructive hover:bg-destructive/10"><Trash2 className="h-4 w-4" /></button>
       </div>
     </div>
   );

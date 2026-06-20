@@ -2,6 +2,7 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useResolvedMedia } from "@/hooks/useResolvedMedia";
+import { useCurrency } from "@/hooks/useCurrency";
 import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/category/$slug")({
@@ -66,6 +67,7 @@ function CategoryPage() {
 function Card({ product, index }: { product: any; index: number }) {
   const cover = product.image_url ?? (Array.isArray(product.image_urls) ? product.image_urls[0] : null);
   const img = useResolvedMedia(cover);
+  const { format } = useCurrency();
   const extraCount = Array.isArray(product.image_urls) ? Math.max(0, product.image_urls.length - 1) : 0;
   return (
     <Link
@@ -80,7 +82,7 @@ function Card({ product, index }: { product: any; index: number }) {
       </div>
       <div className="p-3">
         <h3 className="font-semibold line-clamp-2 text-sm">{product.name}</h3>
-        <div className="mt-2 font-display text-base font-bold text-primary">${Number(product.price).toFixed(2)}</div>
+        <div className="mt-2 font-display text-base font-bold text-primary">{format(Number(product.price))}</div>
       </div>
     </Link>
   );

@@ -2,6 +2,7 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useResolvedMedia } from "@/hooks/useResolvedMedia";
+import { useCurrency } from "@/hooks/useCurrency";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/product/$id")({
@@ -24,6 +25,7 @@ function ProductPage() {
   });
 
   const video = useResolvedMedia(q.data?.video_url);
+  const { format } = useCurrency();
 
   if (q.isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
   if (!q.data) return <div className="text-sm text-muted-foreground">Product not found.</div>;
@@ -63,7 +65,7 @@ function ProductPage() {
             </Link>
           )}
           <h1 className="font-display text-3xl sm:text-5xl font-bold leading-tight">{p.name}</h1>
-          <div className="font-display text-3xl font-bold text-primary">${Number(p.price).toFixed(2)}</div>
+          <div className="font-display text-3xl font-bold text-primary">{format(Number(p.price))}</div>
           {p.description && <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{p.description}</p>}
 
           {p.product_link && (
