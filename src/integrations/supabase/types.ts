@@ -121,6 +121,27 @@ export type Database = {
           },
         ]
       }
+      site_settings: {
+        Row: {
+          bg_music_url: string | null
+          id: number
+          site_name: string
+          updated_at: string
+        }
+        Insert: {
+          bg_music_url?: string | null
+          id?: number
+          site_name?: string
+          updated_at?: string
+        }
+        Update: {
+          bg_music_url?: string | null
+          id?: number
+          site_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

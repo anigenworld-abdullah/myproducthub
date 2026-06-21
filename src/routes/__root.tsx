@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { CurrencyProvider, CurrencySelector } from "@/hooks/useCurrency";
+import { BackgroundMusic } from "@/components/BackgroundMusic";
 import { ShoppingBag, Shield, LogIn, LogOut, Sparkles } from "lucide-react";
 
 function NotFoundComponent() {
@@ -63,13 +64,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "My Product HUB" },
+      { title: "MY PRODUCT HUB" },
       { name: "description", content: "YOU CAN BUY ANY PRODUCT FROM HERE AND IF IT IS NOT  HERE SO SIMPLY CONTACT US." },
-      { property: "og:title", content: "My Product HUB" },
+      { property: "og:title", content: "MY PRODUCT HUB" },
       { property: "og:description", content: "YOU CAN BUY ANY PRODUCT FROM HERE AND IF IT IS NOT  HERE SO SIMPLY CONTACT US." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "My Product HUB" },
+      { name: "twitter:title", content: "MY PRODUCT HUB" },
       { name: "twitter:description", content: "YOU CAN BUY ANY PRODUCT FROM HERE AND IF IT IS NOT  HERE SO SIMPLY CONTACT US." },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/fd479ed8-9be7-4bd8-ba39-17faa36add1e" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/fd479ed8-9be7-4bd8-ba39-17faa36add1e" },
@@ -102,12 +103,12 @@ function Header() {
     <header className="sticky top-0 z-40 glass border-b border-border/60">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="relative">
-            <ShoppingBag className="h-7 w-7 text-primary transition-transform group-hover:rotate-12" />
-            <Sparkles className="h-3 w-3 text-primary-foreground absolute -top-1 -right-1 fill-primary" />
+          <div className="relative animate-float-slow">
+            <ShoppingBag className="h-7 w-7 text-primary transition-transform group-hover:rotate-12 group-hover:scale-110" />
+            <Sparkles className="h-3 w-3 text-primary-foreground absolute -top-1 -right-1 fill-primary animate-spin-slow" />
           </div>
           <span className="font-display text-lg font-bold tracking-tight">
-            PRODUCTS <span className="text-shimmer">HUB</span>
+            MY <span className="text-shimmer">PRODUCT</span> HUB
           </span>
         </Link>
         <nav className="flex items-center gap-2">
@@ -142,13 +143,20 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <CurrencyProvider>
+        <div className="cloud-bg" aria-hidden="true">
+          <span className="cloud cloud-1" />
+          <span className="cloud cloud-2" />
+          <span className="cloud cloud-3" />
+          <span className="cloud cloud-4" />
+        </div>
         <Header />
         <main className="mx-auto max-w-6xl px-4 py-6 animate-fade-in">
           <Outlet />
         </main>
         <footer className="mt-16 border-t border-border/60 py-8 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Products Hub — built with sky-blue clarity.
+          © {new Date().getFullYear()} MY PRODUCT HUB — built with sky-blue clarity.
         </footer>
+        <BackgroundMusic />
         <Toaster />
       </CurrencyProvider>
     </QueryClientProvider>
