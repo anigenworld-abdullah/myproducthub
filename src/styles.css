@@ -142,4 +142,18 @@
 
   .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
   .reveal.in-view { opacity: 1; transform: translateY(0); }
+
+  .animate-float-slow { animation: var(--animate-float-slow); }
+  .animate-spin-slow { animation: var(--animate-spin-slow); }
+  .animate-wiggle:hover { animation: var(--animate-wiggle); }
+
+  .cloud-bg { position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; }
+  .cloud { position: absolute; display: block; width: 180px; height: 60px; background: white; border-radius: 100px; opacity: 0.55; filter: blur(6px); animation: var(--animate-drift); }
+  .cloud::before, .cloud::after { content: ""; position: absolute; background: white; border-radius: 50%; }
+  .cloud::before { width: 90px; height: 90px; top: -45px; left: 30px; }
+  .cloud::after { width: 60px; height: 60px; top: -30px; right: 40px; }
+  .cloud-1 { top: 8%; animation-duration: 70s; }
+  .cloud-2 { top: 32%; animation-duration: 95s; animation-delay: -20s; transform: scale(0.7); opacity: 0.4; }
+  .cloud-3 { top: 58%; animation-duration: 110s; animation-delay: -50s; transform: scale(1.2); opacity: 0.35; }
+  .cloud-4 { top: 78%; animation-duration: 85s; animation-delay: -10s; transform: scale(0.85); opacity: 0.5; }
 }
