@@ -7,7 +7,7 @@ import { uploadMedia } from "@/lib/media";
 import { useResolvedMedia } from "@/hooks/useResolvedMedia";
 import { useCurrency, CURRENCIES, type CurrencyCode } from "@/hooks/useCurrency";
 import { toast } from "sonner";
-import { Plus, Trash2, Megaphone, Tag, Package, Pencil, Save, X } from "lucide-react";
+import { Plus, Trash2, Megaphone, Tag, Package, Pencil, Save, X, Settings as SettingsIcon, Music } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/admin")({
 function AdminPage() {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<"products" | "categories" | "ads">("products");
+  const [tab, setTab] = useState<"products" | "categories" | "ads" | "settings">("products");
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -46,6 +46,7 @@ function AdminPage() {
           ["products", Package, "Products"],
           ["categories", Tag, "Categories"],
           ["ads", Megaphone, "Ads"],
+          ["settings", SettingsIcon, "Settings"],
         ] as const).map(([k, Icon, label]) => (
           <button
             key={k}
@@ -63,6 +64,7 @@ function AdminPage() {
         {tab === "products" && <ProductsAdmin />}
         {tab === "categories" && <CategoriesAdmin />}
         {tab === "ads" && <AdsAdmin />}
+        {tab === "settings" && <SettingsAdmin />}
       </div>
     </div>
   );
