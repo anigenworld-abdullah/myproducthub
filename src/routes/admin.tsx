@@ -571,3 +571,85 @@ function MiniThumb({ path, onRemove, primary }: { path: string; onRemove: () => 
     </div>
   );
 }
+
+// ---------------- Settings ----------------
+function SettingsAdmin() {
+  const qc = useQueryClient();
+  const settingsQ = useQuery({
+    queryKey: ["site-settings"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("*").eq("id", 1).maybeSingle();
+      return data;
+    },
+  });
+  const [bgPath, setBgPath] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const audioUrl = useResolvedMedia(bgPath);
+
+  useEffect(() => {
+    if (settingsQ.data) setBgPath(settingsQ.data.bg_music_url ?? null);
+  }, [settingsQ.data]);
+
+  async function onUpload(file: File) {
+    setUploading(true);
+    try {
+      const path = await uploadMedia(file, "audio");
+      setBgPath(path);
+      toast.success("Uploaded — click Save to apply");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function save() {
+    const { error } = await supabase.from("site_settings").upsert({ id: 1, bg_music_url: bgPath, updated_at: new Date().toISOString() });
+    if (error) return toast.error(error.message);
+    toast.success("Saved");
+    qc.invalidateQueries({ queryKey: ["site-settings"] });
+  }
+
+  async function clearMusic() {
+    setBgPath(null);
+    const { error } = await supabase.from("site_settings").upsert({ id: 1, bg_music_url: null, updated_at: new Date().toISOString() });
+    if (error) return toast.error(error.message);
+    toast.success("Removed");
+    qc.invalidateQueries({ queryKey: ["site-settings"] });
+  }
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h3 className="font-display text-lg font-bold flex items-center gap-2"><Music className="h-5 w-5 text-primary" /> Background Music</h3>
+        <p className="text-xs text-muted-foreground mt-1">Upload an MP3/OGG/WAV. Visitors get a floating play button to start it (browsers block autoplay).</p>
+      </div>
+      <label className="block">
+        <span className="text-sm font-medium">Audio file</span>
+        <input
+          type="file"
+          accept="audio/*"
+          disabled={uploading}
+          onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])}
+          className="mt-1 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-primary-foreground file:font-semibold"
+        />
+      </label>
+      {audioUrl && (
+        <div className="rounded-xl border bg-background p-3">
+          <audio src={audioUrl} controls className="w-full" />
+          <p className="mt-2 text-xs text-muted-foreground break-all">Path: {bgPath}</p>
+        </div>
+      )}
+      <div className="flex gap-2">
+        <button onClick={save} disabled={uploading} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sky disabled:opacity-60">
+          <Save className="inline h-4 w-4 mr-1" /> Save
+        </button>
+        {bgPath && (
+          <button onClick={clearMusic} className="rounded-xl border px-4 py-2 text-sm font-semibold text-destructive hover:bg-destructive/10">
+            <Trash2 className="inline h-4 w-4 mr-1" /> Remove music
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
