@@ -38,12 +38,14 @@ export function SearchBar() {
 
   const suggestions = useMemo(() => {
     const term = q.trim().toLowerCase();
-    if (!term) return [];
+    const data = idx.data ?? [];
+    type Hit = (typeof data)[number];
+    if (!term) return { wordHits: [] as string[], productHits: [] as Hit[] };
     const wordHits = vocab
       .filter((w) => w.toLowerCase().includes(term))
       .sort((a, b) => a.length - b.length)
       .slice(0, 5);
-    const productHits = (idx.data ?? [])
+    const productHits = data
       .filter((p) => (p.name + " " + (p.description ?? "")).toLowerCase().includes(term))
       .slice(0, 6);
     return { wordHits, productHits };
