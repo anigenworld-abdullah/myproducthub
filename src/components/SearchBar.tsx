@@ -96,13 +96,13 @@ export function SearchBar() {
 
       {open && q && has && (
         <div className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border bg-card shadow-sky animate-pop">
-          {(suggestions as any).wordHits.length > 0 && (
+          {suggestions.wordHits.length > 0 && (
             <div className="border-b p-2">
               <div className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                 <Sparkles className="h-3 w-3 text-primary" /> Suggestions
               </div>
               <div className="flex flex-wrap gap-1.5 px-1">
-                {(suggestions as any).wordHits.map((w: string) => (
+                {suggestions.wordHits.map((w) => (
                   <button
                     key={w}
                     onClick={() => { setQ(w); setActive(0); }}
@@ -114,9 +114,9 @@ export function SearchBar() {
               </div>
             </div>
           )}
-          {(suggestions as any).productHits.length > 0 && (
+          {suggestions.productHits.length > 0 && (
             <ul className="max-h-72 overflow-auto py-1">
-              {(suggestions as any).productHits.map((p: any, i: number) => (
+              {suggestions.productHits.map((p, i) => (
                 <li key={p.id}>
                   <button
                     onMouseEnter={() => setActive(i)}
