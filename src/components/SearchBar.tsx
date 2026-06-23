@@ -77,8 +77,8 @@ export function SearchBar() {
           onChange={(e) => { setQ(e.target.value); setOpen(true); setActive(0); }}
           onFocus={() => setOpen(true)}
           onKeyDown={(e) => {
-            if (!has || !suggestions) return;
-            const list = (suggestions as any).productHits as Array<{ id: string }>;
+            if (!has) return;
+            const list = suggestions.productHits;
             if (e.key === "ArrowDown") { e.preventDefault(); setActive((a) => Math.min(a + 1, list.length - 1)); }
             else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)); }
             else if (e.key === "Enter" && list[active]) { e.preventDefault(); go(list[active].id); }
