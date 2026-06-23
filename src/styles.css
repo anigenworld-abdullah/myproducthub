@@ -156,4 +156,31 @@
   .cloud-2 { top: 32%; animation-duration: 95s; animation-delay: -20s; transform: scale(0.7); opacity: 0.4; }
   .cloud-3 { top: 58%; animation-duration: 110s; animation-delay: -50s; transform: scale(1.2); opacity: 0.35; }
   .cloud-4 { top: 78%; animation-duration: 85s; animation-delay: -10s; transform: scale(0.85); opacity: 0.5; }
+
+  .aurora {
+    position: absolute; width: 50vw; height: 50vw; border-radius: 50%;
+    filter: blur(120px); opacity: 0.35; mix-blend-mode: screen;
+    animation: aurora 18s ease-in-out infinite alternate;
+  }
+  .aurora-1 { top: -10%; left: -10%; background: var(--primary); }
+  .aurora-2 { bottom: -15%; right: -10%; background: var(--accent); animation-delay: -8s; }
+  @keyframes aurora {
+    0% { transform: translate(0,0) scale(1); }
+    50% { transform: translate(6vw,-4vh) scale(1.15); }
+    100% { transform: translate(-4vw,5vh) scale(0.95); }
+  }
+  @keyframes bounce-in {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.08); }
+    70% { transform: scale(0.96); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .animate-bounce-in { animation: bounce-in 0.55s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes glow-pulse {
+    0%,100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 40%, transparent); }
+    50% { box-shadow: 0 0 40px 8px color-mix(in oklab, var(--primary) 30%, transparent); }
+  }
+  .animate-glow { animation: glow-pulse 2.4s ease-in-out infinite; }
+  .tilt-on-hover { transition: transform .35s cubic-bezier(.16,1,.3,1); }
+  .tilt-on-hover:hover { transform: perspective(700px) rotateX(3deg) rotateY(-3deg) scale(1.02); }
 }
