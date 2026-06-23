@@ -179,7 +179,7 @@ function CategoryRow({ c, onChanged, onDelete }: { c: any; onChanged: () => void
 }
 
 // ---------------- Products ----------------
-function ProductsAdmin() {
+function ProductsAdmin({ userId, isMainAdmin, isModerator }: { userId: string; isMainAdmin: boolean; isModerator: boolean }) {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<any | null>(null);
 
@@ -188,10 +188,11 @@ function ProductsAdmin() {
     queryFn: async () => (await supabase.from("categories").select("*").order("name")).data ?? [],
   });
   const list = useQuery({
-    queryKey: ["admin-products"],
+    queryKey: ["admin-products", isMainAdmin ? "all" : userId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products").select("*, categories(name)").order("created_at", { ascending: false });
+      let q = supabase.from("products").select("*, categories(name)").order("created_at", { ascending: false });
+      if (!isMainAdmin) q = q.eq("owner_id", userId);
+      const { data, error } = await q;
       if (error) throw error;
       return data;
     },
@@ -206,11 +207,16 @@ function ProductsAdmin() {
     qc.invalidateQueries({ queryKey: ["products", "latest"] });
   }
 
+  function canEdit(p: any) {
+    return isMainAdmin || (isModerator && p.owner_id === userId);
+  }
+
   return (
     <div className="space-y-6">
       <ProductForm
         categories={cats.data ?? []}
         editing={editing}
+        ownerId={userId}
         onDone={() => {
           setEditing(null);
           qc.invalidateQueries({ queryKey: ["admin-products"] });
@@ -219,7 +225,13 @@ function ProductsAdmin() {
       />
       <div className="grid gap-3 sm:grid-cols-2">
         {list.data?.map((p) => (
-          <AdminProductRow key={p.id} p={p} onEdit={() => setEditing(p)} onDelete={() => remove(p.id)} />
+          <AdminProductRow
+            key={p.id}
+            p={p}
+            canEdit={canEdit(p)}
+            onEdit={() => setEditing(p)}
+            onDelete={() => remove(p.id)}
+          />
         ))}
         {list.data?.length === 0 && <p className="text-sm text-muted-foreground">No products yet.</p>}
       </div>
