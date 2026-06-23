@@ -263,7 +263,7 @@ function AdminProductRow({ p, canEdit, onEdit, onDelete }: { p: any; canEdit: bo
   );
 }
 
-function ProductForm({ categories, editing, onDone }: { categories: any[]; editing: any | null; onDone: () => void }) {
+function ProductForm({ categories, editing, ownerId, onDone }: { categories: any[]; editing: any | null; ownerId: string; onDone: () => void }) {
   const { code: viewerCode } = useCurrency();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
