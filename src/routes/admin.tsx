@@ -7,14 +7,14 @@ import { uploadMedia } from "@/lib/media";
 import { useResolvedMedia } from "@/hooks/useResolvedMedia";
 import { useCurrency, CURRENCIES, type CurrencyCode } from "@/hooks/useCurrency";
 import { toast } from "sonner";
-import { Plus, Trash2, Megaphone, Tag, Package, Pencil, Save, X, Settings as SettingsIcon, Music } from "lucide-react";
+import { Plus, Trash2, Megaphone, Tag, Package, Pencil, Save, X, Settings as SettingsIcon, Music, Shield } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
 function AdminPage() {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, isMainAdmin, isModerator, loading } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<"products" | "categories" | "ads" | "settings">("products");
 
@@ -26,33 +26,42 @@ function AdminPage() {
   if (!user) return null;
   if (!isAdmin) {
     return (
-      <div className="mx-auto max-w-md mt-12 rounded-3xl border bg-card p-8 text-center shadow-card">
+      <div className="mx-auto max-w-md mt-12 rounded-3xl border bg-card p-8 text-center shadow-card animate-bounce-in">
         <h1 className="font-display text-xl font-bold">Admin only</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           You're signed in as <strong>{user.email}</strong> but this account isn't an admin.
+          Ask the main admin to grant you access.
         </p>
       </div>
     );
   }
 
+  const tabs = ([
+    ["products", Package, "Products"],
+    ...(isMainAdmin ? [
+      ["categories", Tag, "Categories"],
+      ["ads", Megaphone, "Ads"],
+      ["settings", SettingsIcon, "Settings"],
+    ] as const : []),
+  ] as const);
+
   return (
     <div className="space-y-6 animate-fade-in">
       <header>
-        <h1 className="font-display text-3xl font-bold">Admin Panel</h1>
-        <p className="text-sm text-muted-foreground">Manage your Products Hub.</p>
+        <h1 className="font-display text-3xl font-bold">
+          {isMainAdmin ? "Main Admin Panel" : "Admin Panel"}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {isMainAdmin ? "Full control of Products Hub." : `Welcome ${user.email} — manage your products.`}
+        </p>
       </header>
       <nav className="flex gap-2 flex-wrap">
-        {([
-          ["products", Package, "Products"],
-          ["categories", Tag, "Categories"],
-          ["ads", Megaphone, "Ads"],
-          ["settings", SettingsIcon, "Settings"],
-        ] as const).map(([k, Icon, label]) => (
+        {tabs.map(([k, Icon, label]) => (
           <button
             key={k}
-            onClick={() => setTab(k)}
-            className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition ${
-              tab === k ? "bg-primary text-primary-foreground shadow-sky" : "bg-card border hover:bg-accent"
+            onClick={() => setTab(k as typeof tab)}
+            className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition hover:scale-105 ${
+              tab === k ? "bg-primary text-primary-foreground shadow-sky animate-glow" : "bg-card border hover:bg-accent"
             }`}
           >
             <Icon className="h-4 w-4" /> {label}
@@ -61,10 +70,10 @@ function AdminPage() {
       </nav>
 
       <div className="rounded-3xl border bg-card p-6 shadow-card">
-        {tab === "products" && <ProductsAdmin />}
-        {tab === "categories" && <CategoriesAdmin />}
-        {tab === "ads" && <AdsAdmin />}
-        {tab === "settings" && <SettingsAdmin />}
+        {tab === "products" && <ProductsAdmin userId={user.id} isMainAdmin={isMainAdmin} isModerator={isModerator} />}
+        {tab === "categories" && isMainAdmin && <CategoriesAdmin />}
+        {tab === "ads" && isMainAdmin && <AdsAdmin />}
+        {tab === "settings" && isMainAdmin && <SettingsAdmin />}
       </div>
     </div>
   );
@@ -170,7 +179,7 @@ function CategoryRow({ c, onChanged, onDelete }: { c: any; onChanged: () => void
 }
 
 // ---------------- Products ----------------
-function ProductsAdmin() {
+function ProductsAdmin({ userId, isMainAdmin, isModerator }: { userId: string; isMainAdmin: boolean; isModerator: boolean }) {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<any | null>(null);
 
@@ -179,10 +188,11 @@ function ProductsAdmin() {
     queryFn: async () => (await supabase.from("categories").select("*").order("name")).data ?? [],
   });
   const list = useQuery({
-    queryKey: ["admin-products"],
+    queryKey: ["admin-products", isMainAdmin ? "all" : userId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products").select("*, categories(name)").order("created_at", { ascending: false });
+      let q = supabase.from("products").select("*, categories(name)").order("created_at", { ascending: false });
+      if (!isMainAdmin) q = q.eq("owner_id", userId);
+      const { data, error } = await q;
       if (error) throw error;
       return data;
     },
@@ -197,11 +207,16 @@ function ProductsAdmin() {
     qc.invalidateQueries({ queryKey: ["products", "latest"] });
   }
 
+  function canEdit(p: any) {
+    return isMainAdmin || (isModerator && p.owner_id === userId);
+  }
+
   return (
     <div className="space-y-6">
       <ProductForm
         categories={cats.data ?? []}
         editing={editing}
+        ownerId={userId}
         onDone={() => {
           setEditing(null);
           qc.invalidateQueries({ queryKey: ["admin-products"] });
@@ -210,7 +225,13 @@ function ProductsAdmin() {
       />
       <div className="grid gap-3 sm:grid-cols-2">
         {list.data?.map((p) => (
-          <AdminProductRow key={p.id} p={p} onEdit={() => setEditing(p)} onDelete={() => remove(p.id)} />
+          <AdminProductRow
+            key={p.id}
+            p={p}
+            canEdit={canEdit(p)}
+            onEdit={() => setEditing(p)}
+            onDelete={() => remove(p.id)}
+          />
         ))}
         {list.data?.length === 0 && <p className="text-sm text-muted-foreground">No products yet.</p>}
       </div>
@@ -218,7 +239,7 @@ function ProductsAdmin() {
   );
 }
 
-function AdminProductRow({ p, onEdit, onDelete }: { p: any; onEdit: () => void; onDelete: () => void }) {
+function AdminProductRow({ p, canEdit, onEdit, onDelete }: { p: any; canEdit: boolean; onEdit: () => void; onDelete: () => void }) {
   const img = useResolvedMedia(p.image_url);
   const { format } = useCurrency();
   return (
@@ -234,15 +255,21 @@ function AdminProductRow({ p, onEdit, onDelete }: { p: any; onEdit: () => void; 
           {" · "}{p.categories?.name ?? "—"}
         </div>
         <div className="mt-2 flex gap-1">
-          <button onClick={onEdit} className="rounded-md p-1.5 hover:bg-accent"><Pencil className="h-3.5 w-3.5" /></button>
-          <button onClick={onDelete} className="rounded-md p-1.5 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></button>
+          {canEdit ? (
+            <>
+              <button onClick={onEdit} className="rounded-md p-1.5 hover:bg-accent"><Pencil className="h-3.5 w-3.5" /></button>
+              <button onClick={onDelete} className="rounded-md p-1.5 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></button>
+            </>
+          ) : (
+            <span className="text-[10px] text-muted-foreground italic">read-only (owned by another admin)</span>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-function ProductForm({ categories, editing, onDone }: { categories: any[]; editing: any | null; onDone: () => void }) {
+function ProductForm({ categories, editing, ownerId, onDone }: { categories: any[]; editing: any | null; ownerId: string; onDone: () => void }) {
   const { code: viewerCode } = useCurrency();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -309,7 +336,7 @@ function ProductForm({ categories, editing, onDone }: { categories: any[]; editi
     e.preventDefault();
     if (!name.trim()) return toast.error("Name required");
     setSaving(true);
-    const payload = {
+    const payload: any = {
       name: name.trim(),
       description: description || null,
       price: Number(price) || 0,
@@ -320,6 +347,7 @@ function ProductForm({ categories, editing, onDone }: { categories: any[]; editi
       image_urls: imagePaths,
       video_url: videoPath,
     };
+    if (!editing) payload.owner_id = ownerId;
     const op = editing
       ? supabase.from("products").update(payload).eq("id", editing.id)
       : supabase.from("products").insert(payload);
@@ -619,13 +647,11 @@ function SettingsAdmin() {
   }
 
   return (
-    <div className="space-y-5">
-      <div>
+    <div className="space-y-8">
+      {/* Background music */}
+      <section className="space-y-3">
         <h3 className="font-display text-lg font-bold flex items-center gap-2"><Music className="h-5 w-5 text-primary" /> Background Music</h3>
-        <p className="text-xs text-muted-foreground mt-1">Upload an MP3/OGG/WAV. Visitors get a floating play button to start it (browsers block autoplay).</p>
-      </div>
-      <label className="block">
-        <span className="text-sm font-medium">Audio file</span>
+        <p className="text-xs text-muted-foreground">Upload an MP3/OGG/WAV. Visitors get a floating play button (browsers block autoplay).</p>
         <input
           type="file"
           accept="audio/*"
@@ -633,23 +659,184 @@ function SettingsAdmin() {
           onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])}
           className="mt-1 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-primary-foreground file:font-semibold"
         />
-      </label>
-      {audioUrl && (
-        <div className="rounded-xl border bg-background p-3">
-          <audio src={audioUrl} controls className="w-full" />
-          <p className="mt-2 text-xs text-muted-foreground break-all">Path: {bgPath}</p>
-        </div>
-      )}
-      <div className="flex gap-2">
-        <button onClick={save} disabled={uploading} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sky disabled:opacity-60">
-          <Save className="inline h-4 w-4 mr-1" /> Save
-        </button>
-        {bgPath && (
-          <button onClick={clearMusic} className="rounded-xl border px-4 py-2 text-sm font-semibold text-destructive hover:bg-destructive/10">
-            <Trash2 className="inline h-4 w-4 mr-1" /> Remove music
-          </button>
+        {audioUrl && (
+          <div className="rounded-xl border bg-background p-3">
+            <audio src={audioUrl} controls className="w-full" />
+          </div>
         )}
-      </div>
+        <div className="flex gap-2">
+          <button onClick={save} disabled={uploading} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sky disabled:opacity-60">
+            <Save className="inline h-4 w-4 mr-1" /> Save music
+          </button>
+          {bgPath && (
+            <button onClick={clearMusic} className="rounded-xl border px-4 py-2 text-sm font-semibold text-destructive hover:bg-destructive/10">
+              <Trash2 className="inline h-4 w-4 mr-1" /> Remove
+            </button>
+          )}
+        </div>
+      </section>
+
+      {/* Theme */}
+      <ThemeEditor settings={settingsQ.data} />
+
+      {/* Moderators */}
+      <ModeratorsAdmin />
     </div>
+  );
+}
+
+// ---------------- Theme editor ----------------
+const PRESET_THEMES = [
+  { label: "Sky (default)", primary: "", accent: "", background: "" },
+  { label: "Sunset Pink", primary: "oklch(0.70 0.18 15)", accent: "oklch(0.88 0.10 30)", background: "oklch(0.99 0.01 30)" },
+  { label: "Forest", primary: "oklch(0.55 0.14 150)", accent: "oklch(0.85 0.10 150)", background: "oklch(0.99 0.01 150)" },
+  { label: "Royal Purple", primary: "oklch(0.55 0.22 295)", accent: "oklch(0.85 0.10 295)", background: "oklch(0.99 0.01 290)" },
+  { label: "Midnight", primary: "oklch(0.65 0.18 250)", accent: "oklch(0.50 0.10 250)", background: "oklch(0.20 0.04 250)" },
+  { label: "Coral", primary: "oklch(0.70 0.18 30)", accent: "oklch(0.88 0.10 50)", background: "oklch(0.99 0.01 50)" },
+];
+
+function ThemeEditor({ settings }: { settings: any }) {
+  const qc = useQueryClient();
+  const [primary, setPrimary] = useState("");
+  const [accent, setAccent] = useState("");
+  const [background, setBackground] = useState("");
+
+  useEffect(() => {
+    if (settings) {
+      setPrimary(settings.theme_primary ?? "");
+      setAccent(settings.theme_accent ?? "");
+      setBackground(settings.theme_background ?? "");
+    }
+  }, [settings]);
+
+  async function saveTheme(p = primary, a = accent, b = background) {
+    const { error } = await (supabase as any).from("site_settings").upsert({
+      id: 1, theme_primary: p || null, theme_accent: a || null, theme_background: b || null, updated_at: new Date().toISOString(),
+    });
+    if (error) return toast.error(error.message);
+    setPrimary(p); setAccent(a); setBackground(b);
+    toast.success("Theme updated");
+    qc.invalidateQueries({ queryKey: ["site-settings", "theme"] });
+    qc.invalidateQueries({ queryKey: ["site-settings"] });
+  }
+
+  return (
+    <section className="space-y-3 border-t pt-6">
+      <h3 className="font-display text-lg font-bold flex items-center gap-2">
+        <SettingsIcon className="h-5 w-5 text-primary" /> Theme
+      </h3>
+      <p className="text-xs text-muted-foreground">Pick a preset or fine-tune colors. Visitors see the change instantly.</p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {PRESET_THEMES.map((t) => (
+          <button
+            key={t.label}
+            onClick={() => saveTheme(t.primary, t.accent, t.background)}
+            className="rounded-xl border bg-background p-3 text-left hover:scale-[1.03] transition shadow-card"
+          >
+            <div className="flex gap-1 mb-2">
+              <span className="h-4 w-4 rounded-full border" style={{ background: t.primary || "var(--primary)" }} />
+              <span className="h-4 w-4 rounded-full border" style={{ background: t.accent || "var(--accent)" }} />
+              <span className="h-4 w-4 rounded-full border" style={{ background: t.background || "var(--background)" }} />
+            </div>
+            <div className="text-xs font-semibold">{t.label}</div>
+          </button>
+        ))}
+      </div>
+      <div className="grid gap-2 sm:grid-cols-3">
+        <label className="text-xs space-y-1">
+          <span className="font-medium">Primary (oklch / css color)</span>
+          <Input value={primary} onChange={setPrimary} placeholder="oklch(0.68 0.16 235)" />
+        </label>
+        <label className="text-xs space-y-1">
+          <span className="font-medium">Accent</span>
+          <Input value={accent} onChange={setAccent} placeholder="oklch(0.88 0.09 220)" />
+        </label>
+        <label className="text-xs space-y-1">
+          <span className="font-medium">Background</span>
+          <Input value={background} onChange={setBackground} placeholder="oklch(0.99 0.01 220)" />
+        </label>
+      </div>
+      <div className="flex gap-2">
+        <button onClick={() => saveTheme()} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sky">
+          <Save className="inline h-4 w-4 mr-1" /> Save theme
+        </button>
+        <button onClick={() => saveTheme("", "", "")} className="rounded-xl border px-4 py-2 text-sm font-medium">
+          Reset to default
+        </button>
+      </div>
+    </section>
+  );
+}
+
+// ---------------- Moderators ----------------
+function ModeratorsAdmin() {
+  const qc = useQueryClient();
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const mods = useQuery({
+    queryKey: ["moderators-list"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).rpc("list_moderators");
+      if (error) throw error;
+      return (data ?? []) as Array<{ user_id: string; email: string; created_at: string }>;
+    },
+  });
+
+  async function grant(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setBusy(true);
+    const { data, error } = await (supabase as any).rpc("grant_moderator", { _email: email.trim() });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    if (data?.ok === false) {
+      if (data.error === "user_not_found") return toast.error("No user with that email — they must sign up first.");
+      if (data.error === "forbidden") return toast.error("Only the main admin can do this.");
+      return toast.error("Unable to grant.");
+    }
+    toast.success("Granted admin access");
+    setEmail("");
+    qc.invalidateQueries({ queryKey: ["moderators-list"] });
+  }
+
+  async function revoke(user_id: string) {
+    if (!confirm("Remove admin access for this user?")) return;
+    const { error } = await (supabase as any).rpc("revoke_moderator", { _user_id: user_id });
+    if (error) return toast.error(error.message);
+    toast.success("Revoked");
+    qc.invalidateQueries({ queryKey: ["moderators-list"] });
+  }
+
+  return (
+    <section className="space-y-3 border-t pt-6">
+      <h3 className="font-display text-lg font-bold flex items-center gap-2">
+        <Shield className="h-5 w-5 text-primary" /> Admins (simple admins)
+      </h3>
+      <p className="text-xs text-muted-foreground">
+        Enter the email of any signed-up user to give them admin powers — they'll be able to add, edit, and delete <em>their own</em> products only. You (main admin) can edit or remove anything.
+      </p>
+      <form onSubmit={grant} className="grid gap-2 sm:grid-cols-[1fr_auto]">
+        <Input value={email} onChange={setEmail} placeholder="user@example.com" />
+        <button disabled={busy} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sky disabled:opacity-60">
+          <Plus className="inline h-4 w-4 mr-1" /> Grant access
+        </button>
+      </form>
+      <div className="divide-y rounded-2xl border bg-background">
+        {mods.isLoading && <div className="p-3 text-sm text-muted-foreground">Loading…</div>}
+        {mods.data?.length === 0 && <div className="p-3 text-sm text-muted-foreground">No admins yet.</div>}
+        {mods.data?.map((m) => (
+          <div key={m.user_id} className="flex items-center justify-between p-3">
+            <div>
+              <div className="font-semibold text-sm">{m.email}</div>
+              <div className="text-[11px] text-muted-foreground">since {new Date(m.created_at).toLocaleDateString()}</div>
+            </div>
+            <button onClick={() => revoke(m.user_id)} className="rounded-lg p-2 text-destructive hover:bg-destructive/10">
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
