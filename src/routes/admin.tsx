@@ -14,7 +14,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminPage() {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, isMainAdmin, isModerator, loading } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<"products" | "categories" | "ads" | "settings">("products");
 
@@ -26,33 +26,42 @@ function AdminPage() {
   if (!user) return null;
   if (!isAdmin) {
     return (
-      <div className="mx-auto max-w-md mt-12 rounded-3xl border bg-card p-8 text-center shadow-card">
+      <div className="mx-auto max-w-md mt-12 rounded-3xl border bg-card p-8 text-center shadow-card animate-bounce-in">
         <h1 className="font-display text-xl font-bold">Admin only</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           You're signed in as <strong>{user.email}</strong> but this account isn't an admin.
+          Ask the main admin to grant you access.
         </p>
       </div>
     );
   }
 
+  const tabs = ([
+    ["products", Package, "Products"],
+    ...(isMainAdmin ? [
+      ["categories", Tag, "Categories"],
+      ["ads", Megaphone, "Ads"],
+      ["settings", SettingsIcon, "Settings"],
+    ] as const : []),
+  ] as const);
+
   return (
     <div className="space-y-6 animate-fade-in">
       <header>
-        <h1 className="font-display text-3xl font-bold">Admin Panel</h1>
-        <p className="text-sm text-muted-foreground">Manage your Products Hub.</p>
+        <h1 className="font-display text-3xl font-bold">
+          {isMainAdmin ? "Main Admin Panel" : "Admin Panel"}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {isMainAdmin ? "Full control of Products Hub." : `Welcome ${user.email} — manage your products.`}
+        </p>
       </header>
       <nav className="flex gap-2 flex-wrap">
-        {([
-          ["products", Package, "Products"],
-          ["categories", Tag, "Categories"],
-          ["ads", Megaphone, "Ads"],
-          ["settings", SettingsIcon, "Settings"],
-        ] as const).map(([k, Icon, label]) => (
+        {tabs.map(([k, Icon, label]) => (
           <button
             key={k}
-            onClick={() => setTab(k)}
-            className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition ${
-              tab === k ? "bg-primary text-primary-foreground shadow-sky" : "bg-card border hover:bg-accent"
+            onClick={() => setTab(k as typeof tab)}
+            className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition hover:scale-105 ${
+              tab === k ? "bg-primary text-primary-foreground shadow-sky animate-glow" : "bg-card border hover:bg-accent"
             }`}
           >
             <Icon className="h-4 w-4" /> {label}
@@ -61,10 +70,10 @@ function AdminPage() {
       </nav>
 
       <div className="rounded-3xl border bg-card p-6 shadow-card">
-        {tab === "products" && <ProductsAdmin />}
-        {tab === "categories" && <CategoriesAdmin />}
-        {tab === "ads" && <AdsAdmin />}
-        {tab === "settings" && <SettingsAdmin />}
+        {tab === "products" && <ProductsAdmin userId={user.id} isMainAdmin={isMainAdmin} isModerator={isModerator} />}
+        {tab === "categories" && isMainAdmin && <CategoriesAdmin />}
+        {tab === "ads" && isMainAdmin && <AdsAdmin />}
+        {tab === "settings" && isMainAdmin && <SettingsAdmin />}
       </div>
     </div>
   );
