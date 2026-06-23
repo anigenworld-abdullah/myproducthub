@@ -255,8 +255,14 @@ function AdminProductRow({ p, canEdit, onEdit, onDelete }: { p: any; canEdit: bo
           {" · "}{p.categories?.name ?? "—"}
         </div>
         <div className="mt-2 flex gap-1">
-          <button onClick={onEdit} className="rounded-md p-1.5 hover:bg-accent"><Pencil className="h-3.5 w-3.5" /></button>
-          <button onClick={onDelete} className="rounded-md p-1.5 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></button>
+          {canEdit ? (
+            <>
+              <button onClick={onEdit} className="rounded-md p-1.5 hover:bg-accent"><Pencil className="h-3.5 w-3.5" /></button>
+              <button onClick={onDelete} className="rounded-md p-1.5 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></button>
+            </>
+          ) : (
+            <span className="text-[10px] text-muted-foreground italic">read-only (owned by another admin)</span>
+          )}
         </div>
       </div>
     </div>
