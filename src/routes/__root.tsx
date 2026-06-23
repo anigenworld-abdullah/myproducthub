@@ -153,11 +153,14 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <CurrencyProvider>
+        <ThemeApplier />
         <div className="cloud-bg" aria-hidden="true">
           <span className="cloud cloud-1" />
           <span className="cloud cloud-2" />
           <span className="cloud cloud-3" />
           <span className="cloud cloud-4" />
+          <span className="aurora aurora-1" />
+          <span className="aurora aurora-2" />
         </div>
         <Header />
         <main className="mx-auto max-w-6xl px-4 py-6 animate-fade-in">
