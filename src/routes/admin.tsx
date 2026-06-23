@@ -330,7 +330,7 @@ function ProductForm({ categories, editing, ownerId, onDone }: { categories: any
     e.preventDefault();
     if (!name.trim()) return toast.error("Name required");
     setSaving(true);
-    const payload = {
+    const payload: any = {
       name: name.trim(),
       description: description || null,
       price: Number(price) || 0,
@@ -341,6 +341,7 @@ function ProductForm({ categories, editing, ownerId, onDone }: { categories: any
       image_urls: imagePaths,
       video_url: videoPath,
     };
+    if (!editing) payload.owner_id = ownerId;
     const op = editing
       ? supabase.from("products").update(payload).eq("id", editing.id)
       : supabase.from("products").insert(payload);
