@@ -60,7 +60,7 @@ export function SearchBar() {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  const has = suggestions && typeof suggestions !== "number" && (suggestions.wordHits.length + suggestions.productHits.length) > 0;
+  const has = suggestions.wordHits.length + suggestions.productHits.length > 0;
 
   function go(productId: string) {
     setOpen(false);
