@@ -7,7 +7,7 @@ import { uploadMedia } from "@/lib/media";
 import { useResolvedMedia } from "@/hooks/useResolvedMedia";
 import { useCurrency, CURRENCIES, type CurrencyCode } from "@/hooks/useCurrency";
 import { toast } from "sonner";
-import { Plus, Trash2, Megaphone, Tag, Package, Pencil, Save, X, Settings as SettingsIcon, Music } from "lucide-react";
+import { Plus, Trash2, Megaphone, Tag, Package, Pencil, Save, X, Settings as SettingsIcon, Music, Shield } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
