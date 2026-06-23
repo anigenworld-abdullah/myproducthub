@@ -18,6 +18,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { CurrencyProvider, CurrencySelector } from "@/hooks/useCurrency";
 import { BackgroundMusic } from "@/components/BackgroundMusic";
+import { SearchBar } from "@/components/SearchBar";
+import { ThemeApplier } from "@/components/ThemeApplier";
 import { ShoppingBag, Shield, LogIn, LogOut, Sparkles } from "lucide-react";
 
 function NotFoundComponent() {
