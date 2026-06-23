@@ -647,13 +647,11 @@ function SettingsAdmin() {
   }
 
   return (
-    <div className="space-y-5">
-      <div>
+    <div className="space-y-8">
+      {/* Background music */}
+      <section className="space-y-3">
         <h3 className="font-display text-lg font-bold flex items-center gap-2"><Music className="h-5 w-5 text-primary" /> Background Music</h3>
-        <p className="text-xs text-muted-foreground mt-1">Upload an MP3/OGG/WAV. Visitors get a floating play button to start it (browsers block autoplay).</p>
-      </div>
-      <label className="block">
-        <span className="text-sm font-medium">Audio file</span>
+        <p className="text-xs text-muted-foreground">Upload an MP3/OGG/WAV. Visitors get a floating play button (browsers block autoplay).</p>
         <input
           type="file"
           accept="audio/*"
@@ -661,23 +659,184 @@ function SettingsAdmin() {
           onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])}
           className="mt-1 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-primary-foreground file:font-semibold"
         />
-      </label>
-      {audioUrl && (
-        <div className="rounded-xl border bg-background p-3">
-          <audio src={audioUrl} controls className="w-full" />
-          <p className="mt-2 text-xs text-muted-foreground break-all">Path: {bgPath}</p>
-        </div>
-      )}
-      <div className="flex gap-2">
-        <button onClick={save} disabled={uploading} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sky disabled:opacity-60">
-          <Save className="inline h-4 w-4 mr-1" /> Save
-        </button>
-        {bgPath && (
-          <button onClick={clearMusic} className="rounded-xl border px-4 py-2 text-sm font-semibold text-destructive hover:bg-destructive/10">
-            <Trash2 className="inline h-4 w-4 mr-1" /> Remove music
-          </button>
+        {audioUrl && (
+          <div className="rounded-xl border bg-background p-3">
+            <audio src={audioUrl} controls className="w-full" />
+          </div>
         )}
-      </div>
+        <div className="flex gap-2">
+          <button onClick={save} disabled={uploading} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sky disabled:opacity-60">
+            <Save className="inline h-4 w-4 mr-1" /> Save music
+          </button>
+          {bgPath && (
+            <button onClick={clearMusic} className="rounded-xl border px-4 py-2 text-sm font-semibold text-destructive hover:bg-destructive/10">
+              <Trash2 className="inline h-4 w-4 mr-1" /> Remove
+            </button>
+          )}
+        </div>
+      </section>
+
+      {/* Theme */}
+      <ThemeEditor settings={settingsQ.data} />
+
+      {/* Moderators */}
+      <ModeratorsAdmin />
     </div>
+  );
+}
+
+// ---------------- Theme editor ----------------
+const PRESET_THEMES = [
+  { label: "Sky (default)", primary: "", accent: "", background: "" },
+  { label: "Sunset Pink", primary: "oklch(0.70 0.18 15)", accent: "oklch(0.88 0.10 30)", background: "oklch(0.99 0.01 30)" },
+  { label: "Forest", primary: "oklch(0.55 0.14 150)", accent: "oklch(0.85 0.10 150)", background: "oklch(0.99 0.01 150)" },
+  { label: "Royal Purple", primary: "oklch(0.55 0.22 295)", accent: "oklch(0.85 0.10 295)", background: "oklch(0.99 0.01 290)" },
+  { label: "Midnight", primary: "oklch(0.65 0.18 250)", accent: "oklch(0.50 0.10 250)", background: "oklch(0.20 0.04 250)" },
+  { label: "Coral", primary: "oklch(0.70 0.18 30)", accent: "oklch(0.88 0.10 50)", background: "oklch(0.99 0.01 50)" },
+];
+
+function ThemeEditor({ settings }: { settings: any }) {
+  const qc = useQueryClient();
+  const [primary, setPrimary] = useState("");
+  const [accent, setAccent] = useState("");
+  const [background, setBackground] = useState("");
+
+  useEffect(() => {
+    if (settings) {
+      setPrimary(settings.theme_primary ?? "");
+      setAccent(settings.theme_accent ?? "");
+      setBackground(settings.theme_background ?? "");
+    }
+  }, [settings]);
+
+  async function saveTheme(p = primary, a = accent, b = background) {
+    const { error } = await (supabase as any).from("site_settings").upsert({
+      id: 1, theme_primary: p || null, theme_accent: a || null, theme_background: b || null, updated_at: new Date().toISOString(),
+    });
+    if (error) return toast.error(error.message);
+    setPrimary(p); setAccent(a); setBackground(b);
+    toast.success("Theme updated");
+    qc.invalidateQueries({ queryKey: ["site-settings", "theme"] });
+    qc.invalidateQueries({ queryKey: ["site-settings"] });
+  }
+
+  return (
+    <section className="space-y-3 border-t pt-6">
+      <h3 className="font-display text-lg font-bold flex items-center gap-2">
+        <SettingsIcon className="h-5 w-5 text-primary" /> Theme
+      </h3>
+      <p className="text-xs text-muted-foreground">Pick a preset or fine-tune colors. Visitors see the change instantly.</p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {PRESET_THEMES.map((t) => (
+          <button
+            key={t.label}
+            onClick={() => saveTheme(t.primary, t.accent, t.background)}
+            className="rounded-xl border bg-background p-3 text-left hover:scale-[1.03] transition shadow-card"
+          >
+            <div className="flex gap-1 mb-2">
+              <span className="h-4 w-4 rounded-full border" style={{ background: t.primary || "var(--primary)" }} />
+              <span className="h-4 w-4 rounded-full border" style={{ background: t.accent || "var(--accent)" }} />
+              <span className="h-4 w-4 rounded-full border" style={{ background: t.background || "var(--background)" }} />
+            </div>
+            <div className="text-xs font-semibold">{t.label}</div>
+          </button>
+        ))}
+      </div>
+      <div className="grid gap-2 sm:grid-cols-3">
+        <label className="text-xs space-y-1">
+          <span className="font-medium">Primary (oklch / css color)</span>
+          <Input value={primary} onChange={setPrimary} placeholder="oklch(0.68 0.16 235)" />
+        </label>
+        <label className="text-xs space-y-1">
+          <span className="font-medium">Accent</span>
+          <Input value={accent} onChange={setAccent} placeholder="oklch(0.88 0.09 220)" />
+        </label>
+        <label className="text-xs space-y-1">
+          <span className="font-medium">Background</span>
+          <Input value={background} onChange={setBackground} placeholder="oklch(0.99 0.01 220)" />
+        </label>
+      </div>
+      <div className="flex gap-2">
+        <button onClick={() => saveTheme()} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sky">
+          <Save className="inline h-4 w-4 mr-1" /> Save theme
+        </button>
+        <button onClick={() => saveTheme("", "", "")} className="rounded-xl border px-4 py-2 text-sm font-medium">
+          Reset to default
+        </button>
+      </div>
+    </section>
+  );
+}
+
+// ---------------- Moderators ----------------
+function ModeratorsAdmin() {
+  const qc = useQueryClient();
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const mods = useQuery({
+    queryKey: ["moderators-list"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).rpc("list_moderators");
+      if (error) throw error;
+      return (data ?? []) as Array<{ user_id: string; email: string; created_at: string }>;
+    },
+  });
+
+  async function grant(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setBusy(true);
+    const { data, error } = await (supabase as any).rpc("grant_moderator", { _email: email.trim() });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    if (data?.ok === false) {
+      if (data.error === "user_not_found") return toast.error("No user with that email — they must sign up first.");
+      if (data.error === "forbidden") return toast.error("Only the main admin can do this.");
+      return toast.error("Unable to grant.");
+    }
+    toast.success("Granted admin access");
+    setEmail("");
+    qc.invalidateQueries({ queryKey: ["moderators-list"] });
+  }
+
+  async function revoke(user_id: string) {
+    if (!confirm("Remove admin access for this user?")) return;
+    const { error } = await (supabase as any).rpc("revoke_moderator", { _user_id: user_id });
+    if (error) return toast.error(error.message);
+    toast.success("Revoked");
+    qc.invalidateQueries({ queryKey: ["moderators-list"] });
+  }
+
+  return (
+    <section className="space-y-3 border-t pt-6">
+      <h3 className="font-display text-lg font-bold flex items-center gap-2">
+        <Shield className="h-5 w-5 text-primary" /> Admins (simple admins)
+      </h3>
+      <p className="text-xs text-muted-foreground">
+        Enter the email of any signed-up user to give them admin powers — they'll be able to add, edit, and delete <em>their own</em> products only. You (main admin) can edit or remove anything.
+      </p>
+      <form onSubmit={grant} className="grid gap-2 sm:grid-cols-[1fr_auto]">
+        <Input value={email} onChange={setEmail} placeholder="user@example.com" />
+        <button disabled={busy} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sky disabled:opacity-60">
+          <Plus className="inline h-4 w-4 mr-1" /> Grant access
+        </button>
+      </form>
+      <div className="divide-y rounded-2xl border bg-background">
+        {mods.isLoading && <div className="p-3 text-sm text-muted-foreground">Loading…</div>}
+        {mods.data?.length === 0 && <div className="p-3 text-sm text-muted-foreground">No admins yet.</div>}
+        {mods.data?.map((m) => (
+          <div key={m.user_id} className="flex items-center justify-between p-3">
+            <div>
+              <div className="font-semibold text-sm">{m.email}</div>
+              <div className="text-[11px] text-muted-foreground">since {new Date(m.created_at).toLocaleDateString()}</div>
+            </div>
+            <button onClick={() => revoke(m.user_id)} className="rounded-lg p-2 text-destructive hover:bg-destructive/10">
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
