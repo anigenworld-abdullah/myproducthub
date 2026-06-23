@@ -103,36 +103,44 @@ function Header() {
   const { user, isAdmin } = useAuth();
   return (
     <header className="sticky top-0 z-40 glass border-b border-border/60">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="relative animate-float-slow">
-            <ShoppingBag className="h-7 w-7 text-primary transition-transform group-hover:rotate-12 group-hover:scale-110" />
-            <Sparkles className="h-3 w-3 text-primary-foreground absolute -top-1 -right-1 fill-primary animate-spin-slow" />
+      <div className="mx-auto max-w-6xl px-4 py-3 space-y-2">
+        <div className="flex items-center justify-between gap-3">
+          <Link to="/" className="flex items-center gap-2 group shrink-0">
+            <div className="relative animate-float-slow">
+              <ShoppingBag className="h-7 w-7 text-primary transition-transform group-hover:rotate-12 group-hover:scale-110" />
+              <Sparkles className="h-3 w-3 text-primary-foreground absolute -top-1 -right-1 fill-primary animate-spin-slow" />
+            </div>
+            <span className="font-display text-lg font-bold tracking-tight">
+              MY <span className="text-shimmer">PRODUCT</span> HUB
+            </span>
+          </Link>
+          <div className="hidden md:block flex-1 max-w-md mx-4">
+            <SearchBar />
           </div>
-          <span className="font-display text-lg font-bold tracking-tight">
-            MY <span className="text-shimmer">PRODUCT</span> HUB
-          </span>
-        </Link>
-        <nav className="flex items-center gap-2">
-          <CurrencySelector />
-          {isAdmin && (
-            <Link to="/admin" className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground hover:scale-105 transition animate-pop shadow-sky">
-              <Shield className="h-3.5 w-3.5" /> Admin
-            </Link>
-          )}
-          {user ? (
-            <button
-              onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}
-              className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-medium hover:scale-105 transition"
-            >
-              <LogOut className="h-3.5 w-3.5" /> Sign out
-            </button>
-          ) : (
-            <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-sky hover:scale-105 transition">
-              <LogIn className="h-3.5 w-3.5" /> Sign in
-            </Link>
-          )}
-        </nav>
+          <nav className="flex items-center gap-2">
+            <CurrencySelector />
+            {isAdmin && (
+              <Link to="/admin" className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground hover:scale-105 transition animate-pop shadow-sky">
+                <Shield className="h-3.5 w-3.5" /> Admin
+              </Link>
+            )}
+            {user ? (
+              <button
+                onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}
+                className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-medium hover:scale-105 transition"
+              >
+                <LogOut className="h-3.5 w-3.5" /> Sign out
+              </button>
+            ) : (
+              <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-sky hover:scale-105 transition">
+                <LogIn className="h-3.5 w-3.5" /> Sign in
+              </Link>
+            )}
+          </nav>
+        </div>
+        <div className="md:hidden">
+          <SearchBar />
+        </div>
       </div>
     </header>
   );
