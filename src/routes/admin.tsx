@@ -239,7 +239,7 @@ function ProductsAdmin({ userId, isMainAdmin, isModerator }: { userId: string; i
   );
 }
 
-function AdminProductRow({ p, onEdit, onDelete }: { p: any; onEdit: () => void; onDelete: () => void }) {
+function AdminProductRow({ p, canEdit, onEdit, onDelete }: { p: any; canEdit: boolean; onEdit: () => void; onDelete: () => void }) {
   const img = useResolvedMedia(p.image_url);
   const { format } = useCurrency();
   return (
