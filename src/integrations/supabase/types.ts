@@ -68,6 +68,24 @@ export type Database = {
         }
         Relationships: []
       }
+      moderators: {
+        Row: {
+          created_at: string
+          granted_by: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_by?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category_id: string | null
@@ -77,6 +95,7 @@ export type Database = {
           image_url: string | null
           image_urls: string[]
           name: string
+          owner_id: string | null
           price: number
           price_currency: string
           product_link: string | null
@@ -91,6 +110,7 @@ export type Database = {
           image_url?: string | null
           image_urls?: string[]
           name: string
+          owner_id?: string | null
           price?: number
           price_currency?: string
           product_link?: string | null
@@ -105,6 +125,7 @@ export type Database = {
           image_url?: string | null
           image_urls?: string[]
           name?: string
+          owner_id?: string | null
           price?: number
           price_currency?: string
           product_link?: string | null
@@ -126,18 +147,27 @@ export type Database = {
           bg_music_url: string | null
           id: number
           site_name: string
+          theme_accent: string | null
+          theme_background: string | null
+          theme_primary: string | null
           updated_at: string
         }
         Insert: {
           bg_music_url?: string | null
           id?: number
           site_name?: string
+          theme_accent?: string | null
+          theme_background?: string | null
+          theme_primary?: string | null
           updated_at?: string
         }
         Update: {
           bg_music_url?: string | null
           id?: number
           site_name?: string
+          theme_accent?: string | null
+          theme_background?: string | null
+          theme_primary?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -169,6 +199,7 @@ export type Database = {
     }
     Functions: {
       claim_admin_role: { Args: never; Returns: boolean }
+      grant_moderator: { Args: { _email: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -176,6 +207,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_main_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_moderator: { Args: { _user_id: string }; Returns: boolean }
+      list_moderators: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          user_id: string
+        }[]
+      }
+      revoke_moderator: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user"
