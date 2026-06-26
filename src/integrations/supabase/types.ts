@@ -44,6 +44,24 @@ export type Database = {
         }
         Relationships: []
       }
+      app_config: {
+        Row: {
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -198,6 +216,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _get_admin_email: { Args: never; Returns: string }
       claim_admin_role: { Args: never; Returns: boolean }
       grant_moderator: { Args: { _email: string }; Returns: Json }
       has_role: {
