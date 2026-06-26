@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useResolvedMedia } from "@/hooks/useResolvedMedia";
 import { useCurrency } from "@/hooks/useCurrency";
 import { ArrowLeft, ExternalLink } from "lucide-react";
+import { safeUrl } from "@/lib/utils";
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
@@ -68,9 +69,9 @@ function ProductPage() {
           <div className="font-display text-3xl font-bold text-primary">{format(Number(p.price), (p as any).price_currency ?? "USD")}</div>
           {p.description && <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{p.description}</p>}
 
-          {p.product_link && (
+          {safeUrl(p.product_link) && (
             <a
-              href={p.product_link}
+              href={safeUrl(p.product_link)!}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full bg-hero px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sky transition hover:scale-105"
