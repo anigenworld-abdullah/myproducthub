@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useResolvedMedia } from "@/hooks/useResolvedMedia";
 import { useCurrency } from "@/hooks/useCurrency";
 import { ArrowRight, Tag, ExternalLink } from "lucide-react";
+import { safeUrl } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -183,8 +184,9 @@ function AdCard({ ad }: { ad: any }) {
       </div>
     </div>
   );
-  if (ad.link_url) {
-    return <a href={ad.link_url} target="_blank" rel="noopener noreferrer">{content}</a>;
+  const safeAdUrl = safeUrl(ad.link_url);
+  if (safeAdUrl) {
+    return <a href={safeAdUrl} target="_blank" rel="noopener noreferrer">{content}</a>;
   }
   return content;
 }
