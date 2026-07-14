@@ -71,10 +71,13 @@ function Home() {
         </div>
       </section>
 
+      {/* Full-width banner carousel */}
+      <BannerCarousel />
+
       {/* Ads */}
       {adsQ.data && adsQ.data.length > 0 && (
         <section className="grid gap-4 sm:grid-cols-2">
-          {adsQ.data.map((ad) => (
+          {adsQ.data.map((ad: any) => (
             <AdCard key={ad.id} ad={ad} />
           ))}
         </section>
