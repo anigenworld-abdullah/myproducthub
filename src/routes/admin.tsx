@@ -913,3 +913,68 @@ function ModeratorsAdmin() {
     </section>
   );
 }
+
+// ---------------- Contact info ----------------
+function ContactAdmin({ settings }: { settings: any }) {
+  const qc = useQueryClient();
+  const [whatsapp, setWhatsapp] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [url, setUrl] = useState("");
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    if (settings) {
+      setWhatsapp(settings.contact_whatsapp ?? "");
+      setInstagram(settings.contact_instagram ?? "");
+      setUrl(settings.contact_url ?? "");
+      setEmail(settings.contact_email ?? "");
+    }
+  }, [settings]);
+
+  async function save() {
+    const { error } = await (supabase as any).from("site_settings").upsert({
+      id: 1,
+      contact_whatsapp: whatsapp.trim() || null,
+      contact_instagram: instagram.trim() || null,
+      contact_url: url.trim() || null,
+      contact_email: email.trim() || null,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) return toast.error(error.message);
+    toast.success("Contact info saved");
+    qc.invalidateQueries({ queryKey: ["site-settings"] });
+    qc.invalidateQueries({ queryKey: ["site-settings", "contact"] });
+  }
+
+  return (
+    <section className="space-y-3 border-t pt-6">
+      <h3 className="font-display text-lg font-bold flex items-center gap-2">
+        <SettingsIcon className="h-5 w-5 text-primary" /> Contact info
+      </h3>
+      <p className="text-xs text-muted-foreground">
+        Fill any of these — visitors will only see a "Contact us" section when at least one is set.
+      </p>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <label className="text-xs space-y-1">
+          <span className="font-medium">WhatsApp number (with country code)</span>
+          <Input value={whatsapp} onChange={setWhatsapp} placeholder="+15551234567" />
+        </label>
+        <label className="text-xs space-y-1">
+          <span className="font-medium">Instagram handle or URL</span>
+          <Input value={instagram} onChange={setInstagram} placeholder="@yourbrand" />
+        </label>
+        <label className="text-xs space-y-1">
+          <span className="font-medium">Website / other URL</span>
+          <Input value={url} onChange={setUrl} placeholder="https://example.com" />
+        </label>
+        <label className="text-xs space-y-1">
+          <span className="font-medium">Email</span>
+          <Input value={email} onChange={setEmail} placeholder="hello@example.com" />
+        </label>
+      </div>
+      <button onClick={save} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sky">
+        <Save className="inline h-4 w-4 mr-1" /> Save contact info
+      </button>
+    </section>
+  );
+}
