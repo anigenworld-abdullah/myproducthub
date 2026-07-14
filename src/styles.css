@@ -184,3 +184,39 @@
   .tilt-on-hover { transition: transform .35s cubic-bezier(.16,1,.3,1); }
   .tilt-on-hover:hover { transform: perspective(700px) rotateX(3deg) rotateY(-3deg) scale(1.02); }
 }
+
+@layer utilities {
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+
+  /* Extra ambient background: floating orbs + gentle grid drift */
+  .orb {
+    position: absolute; border-radius: 9999px; filter: blur(60px); opacity: 0.35;
+    mix-blend-mode: screen; pointer-events: none;
+    animation: orb-float 22s ease-in-out infinite alternate;
+  }
+  .orb-1 { width: 22vw; height: 22vw; top: 12%; left: 55%; background: var(--primary); }
+  .orb-2 { width: 18vw; height: 18vw; top: 55%; left: 8%; background: var(--accent); animation-delay: -6s; }
+  .orb-3 { width: 26vw; height: 26vw; bottom: 5%; right: 15%; background: var(--primary-glow, var(--primary)); animation-delay: -12s; }
+
+  @keyframes orb-float {
+    0%   { transform: translate(0,0) scale(1); }
+    50%  { transform: translate(3vw,-3vh) scale(1.1); }
+    100% { transform: translate(-3vw,4vh) scale(0.95); }
+  }
+
+  .sparkle-layer {
+    position: absolute; inset: 0; background-image:
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,0.9) 0.5px, transparent 1.5px),
+      radial-gradient(circle at 70% 60%, rgba(255,255,255,0.7) 0.5px, transparent 1.5px),
+      radial-gradient(circle at 40% 80%, rgba(255,255,255,0.8) 0.5px, transparent 1.5px),
+      radial-gradient(circle at 85% 20%, rgba(255,255,255,0.6) 0.5px, transparent 1.5px);
+    background-size: 350px 350px;
+    animation: sparkle-drift 30s linear infinite;
+    opacity: 0.55; pointer-events: none;
+  }
+  @keyframes sparkle-drift {
+    from { background-position: 0 0, 100px 50px, 50px 200px, 200px 100px; }
+    to   { background-position: 350px 350px, 450px 400px, 400px 550px, 550px 450px; }
+  }
+}
