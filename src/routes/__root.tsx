@@ -161,6 +161,10 @@ function RootComponent() {
           <span className="cloud cloud-4" />
           <span className="aurora aurora-1" />
           <span className="aurora aurora-2" />
+          <span className="orb orb-1" />
+          <span className="orb orb-2" />
+          <span className="orb orb-3" />
+          <span className="sparkle-layer" />
         </div>
         <Header />
         <main className="mx-auto max-w-6xl px-4 py-6 animate-fade-in">

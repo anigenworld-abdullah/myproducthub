@@ -415,38 +415,51 @@ function AdsAdmin() {
   const [title, setTitle] = useState("");
   const [link, setLink] = useState("");
   const [imagePath, setImagePath] = useState<string | null>(null);
+  const [position, setPosition] = useState<"grid" | "banner">("banner");
+  const [mediaType, setMediaType] = useState<"image" | "video">("image");
+  const [sortOrder, setSortOrder] = useState("0");
+
+  function invalidateAll() {
+    qc.invalidateQueries({ queryKey: ["admin-ads"] });
+    qc.invalidateQueries({ queryKey: ["ads", "active"] });
+    qc.invalidateQueries({ queryKey: ["ads", "active", "grid"] });
+    qc.invalidateQueries({ queryKey: ["ads", "banner"] });
+  }
 
   const list = useQuery({
     queryKey: ["admin-ads"],
-    queryFn: async () => (await supabase.from("ads").select("*").order("created_at", { ascending: false })).data ?? [],
+    queryFn: async () => (await supabase.from("ads").select("*").order("position").order("sort_order")).data ?? [],
   });
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
-    const { error } = await supabase.from("ads").insert({
-      title: title.trim(), link_url: link || null, image_url: imagePath, active: true,
+    const { error } = await (supabase as any).from("ads").insert({
+      title: title.trim(),
+      link_url: link || null,
+      image_url: imagePath,
+      active: true,
+      position,
+      media_type: mediaType,
+      sort_order: Number(sortOrder) || 0,
     });
     if (error) return toast.error(error.message);
     toast.success("Ad added");
-    setTitle(""); setLink(""); setImagePath(null);
-    qc.invalidateQueries({ queryKey: ["admin-ads"] });
-    qc.invalidateQueries({ queryKey: ["ads", "active"] });
+    setTitle(""); setLink(""); setImagePath(null); setSortOrder("0");
+    invalidateAll();
   }
   async function toggle(id: string, active: boolean) {
     await supabase.from("ads").update({ active: !active }).eq("id", id);
-    qc.invalidateQueries({ queryKey: ["admin-ads"] });
-    qc.invalidateQueries({ queryKey: ["ads", "active"] });
+    invalidateAll();
   }
   async function remove(id: string) {
     if (!confirm("Delete this ad?")) return;
     await supabase.from("ads").delete().eq("id", id);
-    qc.invalidateQueries({ queryKey: ["admin-ads"] });
-    qc.invalidateQueries({ queryKey: ["ads", "active"] });
+    invalidateAll();
   }
 
   async function handleFile(file: File) {
-    try { setImagePath(await uploadMedia(file, "ads")); toast.success("Image uploaded"); }
+    try { setImagePath(await uploadMedia(file, "ads")); toast.success("Uploaded"); }
     catch (e: any) { toast.error(e.message ?? "Upload failed"); }
   }
 
@@ -456,17 +469,43 @@ function AdsAdmin() {
         <div className="font-semibold">New ad</div>
         <Input value={title} onChange={setTitle} placeholder="Ad title *" />
         <Input value={link} onChange={setLink} placeholder="Link URL (https://…)" />
-        <FileField label="Image" accept="image/*" current={imagePath} onPick={handleFile} onClear={() => setImagePath(null)} />
+        <div className="grid grid-cols-3 gap-2 text-xs">
+          <label className="space-y-1">
+            <span className="font-medium">Placement</span>
+            <select value={position} onChange={(e) => setPosition(e.target.value as any)}
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm">
+              <option value="banner">Full-width banner (top strip)</option>
+              <option value="grid">Sidebar / grid card</option>
+            </select>
+          </label>
+          <label className="space-y-1">
+            <span className="font-medium">Media type</span>
+            <select value={mediaType} onChange={(e) => setMediaType(e.target.value as any)}
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm">
+              <option value="image">Image</option>
+              <option value="video">Video</option>
+            </select>
+          </label>
+          <label className="space-y-1">
+            <span className="font-medium">Order</span>
+            <Input value={sortOrder} onChange={setSortOrder} placeholder="0" type="number" />
+          </label>
+        </div>
+        <FileField
+          label={mediaType === "video" ? "Video (mp4/webm)" : "Image"}
+          accept={mediaType === "video" ? "video/*" : "image/*"}
+          current={imagePath}
+          onPick={handleFile}
+          onClear={() => setImagePath(null)}
+        />
         <button className="rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sky">
           <Plus className="inline h-4 w-4" /> Add ad
         </button>
       </form>
       <div className="space-y-2">
         {list.data?.map((a) => (
-          <AdRow key={a.id} a={a} onChanged={() => {
-            qc.invalidateQueries({ queryKey: ["admin-ads"] });
-            qc.invalidateQueries({ queryKey: ["ads", "active"] });
-          }} onToggle={() => toggle(a.id, a.active)} onDelete={() => remove(a.id)} />
+          <AdRow key={a.id} a={a} onChanged={invalidateAll}
+            onToggle={() => toggle(a.id, a.active)} onDelete={() => remove(a.id)} />
         ))}
         {list.data?.length === 0 && <p className="text-sm text-muted-foreground">No ads yet.</p>}
       </div>
@@ -479,11 +518,19 @@ function AdRow({ a, onChanged, onToggle, onDelete }: { a: any; onChanged: () => 
   const [title, setTitle] = useState(a.title);
   const [link, setLink] = useState(a.link_url ?? "");
   const [imagePath, setImagePath] = useState<string | null>(a.image_url ?? null);
+  const [position, setPosition] = useState<"grid" | "banner">((a.position ?? "grid") as any);
+  const [mediaType, setMediaType] = useState<"image" | "video">((a.media_type ?? "image") as any);
+  const [sortOrder, setSortOrder] = useState(String(a.sort_order ?? 0));
 
   async function save() {
     if (!title.trim()) return toast.error("Title required");
-    const { error } = await supabase.from("ads").update({
-      title: title.trim(), link_url: link || null, image_url: imagePath,
+    const { error } = await (supabase as any).from("ads").update({
+      title: title.trim(),
+      link_url: link || null,
+      image_url: imagePath,
+      position,
+      media_type: mediaType,
+      sort_order: Number(sortOrder) || 0,
     }).eq("id", a.id);
     if (error) return toast.error(error.message);
     toast.success("Updated");
@@ -492,7 +539,7 @@ function AdRow({ a, onChanged, onToggle, onDelete }: { a: any; onChanged: () => 
   }
 
   async function handleFile(file: File) {
-    try { setImagePath(await uploadMedia(file, "ads")); toast.success("Image uploaded"); }
+    try { setImagePath(await uploadMedia(file, "ads")); toast.success("Uploaded"); }
     catch (e: any) { toast.error(e.message ?? "Upload failed"); }
   }
 
@@ -501,10 +548,29 @@ function AdRow({ a, onChanged, onToggle, onDelete }: { a: any; onChanged: () => 
       <div className="rounded-xl border bg-background p-3 space-y-2">
         <Input value={title} onChange={setTitle} placeholder="Title" />
         <Input value={link} onChange={setLink} placeholder="Link URL" />
-        <FileField label="Image" accept="image/*" current={imagePath} onPick={handleFile} onClear={() => setImagePath(null)} />
+        <div className="grid grid-cols-3 gap-2 text-xs">
+          <select value={position} onChange={(e) => setPosition(e.target.value as any)}
+            className="rounded-xl border bg-background px-3 py-2 text-sm">
+            <option value="banner">Banner</option>
+            <option value="grid">Grid</option>
+          </select>
+          <select value={mediaType} onChange={(e) => setMediaType(e.target.value as any)}
+            className="rounded-xl border bg-background px-3 py-2 text-sm">
+            <option value="image">Image</option>
+            <option value="video">Video</option>
+          </select>
+          <Input value={sortOrder} onChange={setSortOrder} placeholder="Order" type="number" />
+        </div>
+        <FileField
+          label={mediaType === "video" ? "Video" : "Image"}
+          accept={mediaType === "video" ? "video/*" : "image/*"}
+          current={imagePath}
+          onPick={handleFile}
+          onClear={() => setImagePath(null)}
+        />
         <div className="flex gap-2">
           <button onClick={save} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"><Save className="inline h-3.5 w-3.5" /> Save</button>
-          <button onClick={() => { setEditing(false); setTitle(a.title); setLink(a.link_url ?? ""); setImagePath(a.image_url ?? null); }} className="rounded-lg border px-3 py-1.5 text-xs"><X className="inline h-3.5 w-3.5" /> Cancel</button>
+          <button onClick={() => { setEditing(false); }} className="rounded-lg border px-3 py-1.5 text-xs"><X className="inline h-3.5 w-3.5" /> Cancel</button>
         </div>
       </div>
     );
@@ -513,7 +579,12 @@ function AdRow({ a, onChanged, onToggle, onDelete }: { a: any; onChanged: () => 
   return (
     <div className="flex items-center justify-between rounded-xl border bg-background p-3">
       <div className="min-w-0">
-        <div className="font-semibold truncate">{a.title}</div>
+        <div className="font-semibold truncate flex items-center gap-2">
+          {a.title}
+          <span className="text-[10px] font-normal bg-muted rounded-full px-2 py-0.5">
+            {(a.position ?? "grid") === "banner" ? "Banner" : "Grid"} · {a.media_type ?? "image"}
+          </span>
+        </div>
         <div className="text-xs text-muted-foreground truncate max-w-[18rem]">{a.link_url ?? "—"}</div>
       </div>
       <div className="flex items-center gap-2">
@@ -680,6 +751,8 @@ function SettingsAdmin() {
       <ThemeEditor settings={settingsQ.data} />
 
       {/* Moderators */}
+      <ContactAdmin settings={settingsQ.data} />
+
       <ModeratorsAdmin />
     </div>
   );
@@ -837,6 +910,71 @@ function ModeratorsAdmin() {
           </div>
         ))}
       </div>
+    </section>
+  );
+}
+
+// ---------------- Contact info ----------------
+function ContactAdmin({ settings }: { settings: any }) {
+  const qc = useQueryClient();
+  const [whatsapp, setWhatsapp] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [url, setUrl] = useState("");
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    if (settings) {
+      setWhatsapp(settings.contact_whatsapp ?? "");
+      setInstagram(settings.contact_instagram ?? "");
+      setUrl(settings.contact_url ?? "");
+      setEmail(settings.contact_email ?? "");
+    }
+  }, [settings]);
+
+  async function save() {
+    const { error } = await (supabase as any).from("site_settings").upsert({
+      id: 1,
+      contact_whatsapp: whatsapp.trim() || null,
+      contact_instagram: instagram.trim() || null,
+      contact_url: url.trim() || null,
+      contact_email: email.trim() || null,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) return toast.error(error.message);
+    toast.success("Contact info saved");
+    qc.invalidateQueries({ queryKey: ["site-settings"] });
+    qc.invalidateQueries({ queryKey: ["site-settings", "contact"] });
+  }
+
+  return (
+    <section className="space-y-3 border-t pt-6">
+      <h3 className="font-display text-lg font-bold flex items-center gap-2">
+        <SettingsIcon className="h-5 w-5 text-primary" /> Contact info
+      </h3>
+      <p className="text-xs text-muted-foreground">
+        Fill any of these — visitors will only see a "Contact us" section when at least one is set.
+      </p>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <label className="text-xs space-y-1">
+          <span className="font-medium">WhatsApp number (with country code)</span>
+          <Input value={whatsapp} onChange={setWhatsapp} placeholder="+15551234567" />
+        </label>
+        <label className="text-xs space-y-1">
+          <span className="font-medium">Instagram handle or URL</span>
+          <Input value={instagram} onChange={setInstagram} placeholder="@yourbrand" />
+        </label>
+        <label className="text-xs space-y-1">
+          <span className="font-medium">Website / other URL</span>
+          <Input value={url} onChange={setUrl} placeholder="https://example.com" />
+        </label>
+        <label className="text-xs space-y-1">
+          <span className="font-medium">Email</span>
+          <Input value={email} onChange={setEmail} placeholder="hello@example.com" />
+        </label>
+      </div>
+      <button onClick={save} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sky">
+        <Save className="inline h-4 w-4 mr-1" /> Save contact info
+      </button>
     </section>
   );
 }

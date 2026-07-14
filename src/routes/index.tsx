@@ -5,6 +5,8 @@ import { useResolvedMedia } from "@/hooks/useResolvedMedia";
 import { useCurrency } from "@/hooks/useCurrency";
 import { ArrowRight, Tag, ExternalLink } from "lucide-react";
 import { safeUrl } from "@/lib/utils";
+import { BannerCarousel } from "@/components/BannerCarousel";
+import { ContactUs } from "@/components/ContactUs";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -40,11 +42,15 @@ function Home() {
     },
   });
   const adsQ = useQuery({
-    queryKey: ["ads", "active"],
+    queryKey: ["ads", "active", "grid"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("ads").select("*").eq("active", true);
+      const { data, error } = await (supabase as any)
+        .from("ads")
+        .select("*")
+        .eq("active", true)
+        .neq("position", "banner");
       if (error) throw error;
-      return data;
+      return data ?? [];
     },
   });
 
@@ -65,10 +71,13 @@ function Home() {
         </div>
       </section>
 
+      {/* Full-width banner carousel */}
+      <BannerCarousel />
+
       {/* Ads */}
       {adsQ.data && adsQ.data.length > 0 && (
         <section className="grid gap-4 sm:grid-cols-2">
-          {adsQ.data.map((ad) => (
+          {adsQ.data.map((ad: any) => (
             <AdCard key={ad.id} ad={ad} />
           ))}
         </section>
@@ -118,6 +127,9 @@ function Home() {
           </div>
         )}
       </section>
+
+      {/* Contact */}
+      <ContactUs />
     </div>
   );
 }
