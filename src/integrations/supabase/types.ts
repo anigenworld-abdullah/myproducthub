@@ -21,7 +21,9 @@ export type Database = {
           id: string
           image_url: string | null
           link_url: string | null
+          media_type: string
           position: string
+          sort_order: number
           title: string
         }
         Insert: {
@@ -30,7 +32,9 @@ export type Database = {
           id?: string
           image_url?: string | null
           link_url?: string | null
+          media_type?: string
           position?: string
+          sort_order?: number
           title: string
         }
         Update: {
@@ -39,7 +43,9 @@ export type Database = {
           id?: string
           image_url?: string | null
           link_url?: string | null
+          media_type?: string
           position?: string
+          sort_order?: number
           title?: string
         }
         Relationships: []
@@ -163,6 +169,10 @@ export type Database = {
       site_settings: {
         Row: {
           bg_music_url: string | null
+          contact_email: string | null
+          contact_instagram: string | null
+          contact_url: string | null
+          contact_whatsapp: string | null
           id: number
           site_name: string
           theme_accent: string | null
@@ -172,6 +182,10 @@ export type Database = {
         }
         Insert: {
           bg_music_url?: string | null
+          contact_email?: string | null
+          contact_instagram?: string | null
+          contact_url?: string | null
+          contact_whatsapp?: string | null
           id?: number
           site_name?: string
           theme_accent?: string | null
@@ -181,6 +195,10 @@ export type Database = {
         }
         Update: {
           bg_music_url?: string | null
+          contact_email?: string | null
+          contact_instagram?: string | null
+          contact_url?: string | null
+          contact_whatsapp?: string | null
           id?: number
           site_name?: string
           theme_accent?: string | null
