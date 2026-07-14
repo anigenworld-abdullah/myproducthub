@@ -42,11 +42,15 @@ function Home() {
     },
   });
   const adsQ = useQuery({
-    queryKey: ["ads", "active"],
+    queryKey: ["ads", "active", "grid"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("ads").select("*").eq("active", true);
+      const { data, error } = await (supabase as any)
+        .from("ads")
+        .select("*")
+        .eq("active", true)
+        .neq("position", "banner");
       if (error) throw error;
-      return data;
+      return data ?? [];
     },
   });
 
