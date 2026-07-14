@@ -415,38 +415,51 @@ function AdsAdmin() {
   const [title, setTitle] = useState("");
   const [link, setLink] = useState("");
   const [imagePath, setImagePath] = useState<string | null>(null);
+  const [position, setPosition] = useState<"grid" | "banner">("banner");
+  const [mediaType, setMediaType] = useState<"image" | "video">("image");
+  const [sortOrder, setSortOrder] = useState("0");
+
+  function invalidateAll() {
+    qc.invalidateQueries({ queryKey: ["admin-ads"] });
+    qc.invalidateQueries({ queryKey: ["ads", "active"] });
+    qc.invalidateQueries({ queryKey: ["ads", "active", "grid"] });
+    qc.invalidateQueries({ queryKey: ["ads", "banner"] });
+  }
 
   const list = useQuery({
     queryKey: ["admin-ads"],
-    queryFn: async () => (await supabase.from("ads").select("*").order("created_at", { ascending: false })).data ?? [],
+    queryFn: async () => (await supabase.from("ads").select("*").order("position").order("sort_order")).data ?? [],
   });
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
-    const { error } = await supabase.from("ads").insert({
-      title: title.trim(), link_url: link || null, image_url: imagePath, active: true,
+    const { error } = await (supabase as any).from("ads").insert({
+      title: title.trim(),
+      link_url: link || null,
+      image_url: imagePath,
+      active: true,
+      position,
+      media_type: mediaType,
+      sort_order: Number(sortOrder) || 0,
     });
     if (error) return toast.error(error.message);
     toast.success("Ad added");
-    setTitle(""); setLink(""); setImagePath(null);
-    qc.invalidateQueries({ queryKey: ["admin-ads"] });
-    qc.invalidateQueries({ queryKey: ["ads", "active"] });
+    setTitle(""); setLink(""); setImagePath(null); setSortOrder("0");
+    invalidateAll();
   }
   async function toggle(id: string, active: boolean) {
     await supabase.from("ads").update({ active: !active }).eq("id", id);
-    qc.invalidateQueries({ queryKey: ["admin-ads"] });
-    qc.invalidateQueries({ queryKey: ["ads", "active"] });
+    invalidateAll();
   }
   async function remove(id: string) {
     if (!confirm("Delete this ad?")) return;
     await supabase.from("ads").delete().eq("id", id);
-    qc.invalidateQueries({ queryKey: ["admin-ads"] });
-    qc.invalidateQueries({ queryKey: ["ads", "active"] });
+    invalidateAll();
   }
 
   async function handleFile(file: File) {
-    try { setImagePath(await uploadMedia(file, "ads")); toast.success("Image uploaded"); }
+    try { setImagePath(await uploadMedia(file, "ads")); toast.success("Uploaded"); }
     catch (e: any) { toast.error(e.message ?? "Upload failed"); }
   }
 
@@ -456,17 +469,43 @@ function AdsAdmin() {
         <div className="font-semibold">New ad</div>
         <Input value={title} onChange={setTitle} placeholder="Ad title *" />
         <Input value={link} onChange={setLink} placeholder="Link URL (https://…)" />
-        <FileField label="Image" accept="image/*" current={imagePath} onPick={handleFile} onClear={() => setImagePath(null)} />
+        <div className="grid grid-cols-3 gap-2 text-xs">
+          <label className="space-y-1">
+            <span className="font-medium">Placement</span>
+            <select value={position} onChange={(e) => setPosition(e.target.value as any)}
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm">
+              <option value="banner">Full-width banner (top strip)</option>
+              <option value="grid">Sidebar / grid card</option>
+            </select>
+          </label>
+          <label className="space-y-1">
+            <span className="font-medium">Media type</span>
+            <select value={mediaType} onChange={(e) => setMediaType(e.target.value as any)}
+              className="w-full rounded-xl border bg-background px-3 py-2 text-sm">
+              <option value="image">Image</option>
+              <option value="video">Video</option>
+            </select>
+          </label>
+          <label className="space-y-1">
+            <span className="font-medium">Order</span>
+            <Input value={sortOrder} onChange={setSortOrder} placeholder="0" type="number" />
+          </label>
+        </div>
+        <FileField
+          label={mediaType === "video" ? "Video (mp4/webm)" : "Image"}
+          accept={mediaType === "video" ? "video/*" : "image/*"}
+          current={imagePath}
+          onPick={handleFile}
+          onClear={() => setImagePath(null)}
+        />
         <button className="rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sky">
           <Plus className="inline h-4 w-4" /> Add ad
         </button>
       </form>
       <div className="space-y-2">
         {list.data?.map((a) => (
-          <AdRow key={a.id} a={a} onChanged={() => {
-            qc.invalidateQueries({ queryKey: ["admin-ads"] });
-            qc.invalidateQueries({ queryKey: ["ads", "active"] });
-          }} onToggle={() => toggle(a.id, a.active)} onDelete={() => remove(a.id)} />
+          <AdRow key={a.id} a={a} onChanged={invalidateAll}
+            onToggle={() => toggle(a.id, a.active)} onDelete={() => remove(a.id)} />
         ))}
         {list.data?.length === 0 && <p className="text-sm text-muted-foreground">No ads yet.</p>}
       </div>
