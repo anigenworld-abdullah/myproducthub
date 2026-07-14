@@ -127,6 +127,9 @@ function Home() {
           </div>
         )}
       </section>
+
+      {/* Contact */}
+      <ContactUs />
     </div>
   );
 }
