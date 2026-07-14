@@ -751,6 +751,8 @@ function SettingsAdmin() {
       <ThemeEditor settings={settingsQ.data} />
 
       {/* Moderators */}
+      <ContactAdmin settings={settingsQ.data} />
+
       <ModeratorsAdmin />
     </div>
   );
