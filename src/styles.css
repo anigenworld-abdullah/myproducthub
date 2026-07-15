@@ -114,6 +114,13 @@
     background-attachment: fixed;
     color: var(--color-foreground);
     min-height: 100vh;
+    transition: background-color 600ms ease, background-image 600ms ease, color 400ms ease;
+  }
+  /* Smoothly animate theme-driven color changes across the app */
+  body, body *:not(svg):not(path) {
+    transition-property: background-color, background-image, border-color, color, fill, stroke, box-shadow;
+    transition-duration: 500ms;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
   h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
 }
