@@ -24,6 +24,7 @@ export function ThemeApplier() {
     };
     apply("--primary", q.data?.theme_primary ?? null);
     apply("--ring", q.data?.theme_primary ?? null);
+    apply("--primary-glow", q.data?.theme_accent ?? q.data?.theme_primary ?? null);
     apply("--accent", q.data?.theme_accent ?? null);
     apply("--background", q.data?.theme_background ?? null);
   }, [q.data]);
