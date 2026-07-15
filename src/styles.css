@@ -98,10 +98,10 @@
   --input: oklch(0.93 0.02 225);
   --ring: oklch(0.68 0.16 235);
 
-  --gradient-sky: linear-gradient(135deg, oklch(0.92 0.07 220) 0%, oklch(0.99 0.01 220) 60%, oklch(1 0 0) 100%);
-  --gradient-hero: linear-gradient(120deg, oklch(0.68 0.16 235) 0%, oklch(0.82 0.13 220) 100%);
-  --shadow-sky: 0 20px 50px -20px oklch(0.68 0.16 235 / 0.45);
-  --shadow-card: 0 4px 20px -8px oklch(0.50 0.10 235 / 0.25);
+  --gradient-sky: linear-gradient(135deg, color-mix(in oklab, var(--accent) 60%, white) 0%, color-mix(in oklab, var(--background) 90%, white) 60%, white 100%);
+  --gradient-hero: linear-gradient(120deg, var(--primary) 0%, color-mix(in oklab, var(--accent) 80%, var(--primary)) 100%);
+  --shadow-sky: 0 20px 50px -20px color-mix(in oklab, var(--primary) 55%, transparent);
+  --shadow-card: 0 4px 20px -8px color-mix(in oklab, var(--primary) 35%, transparent);
 }
 
 @layer base {
