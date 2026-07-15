@@ -5,6 +5,8 @@ import { useResolvedMedia } from "@/hooks/useResolvedMedia";
 import { useCurrency } from "@/hooks/useCurrency";
 import { ArrowRight, Tag, ExternalLink } from "lucide-react";
 import { safeUrl } from "@/lib/utils";
+import { BannerCarousel } from "@/components/BannerCarousel";
+import { ContactUs } from "@/components/ContactUs";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -50,6 +52,12 @@ function Home() {
 
   return (
     <div className="space-y-10">
+      {/* Full-width banner ads (breaks out of centered container) */}
+      <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen">
+        <BannerCarousel />
+      </div>
+
+
       {/* Hero */}
       <section className="relative overflow-hidden rounded-3xl bg-hero p-8 sm:p-12 text-primary-foreground shadow-sky">
         <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-white/20 blur-3xl animate-float" />
@@ -118,6 +126,9 @@ function Home() {
           </div>
         )}
       </section>
+
+      {/* Contact us — only renders if admin filled in any contact info */}
+      <ContactUs />
     </div>
   );
 }
