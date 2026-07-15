@@ -5,6 +5,8 @@ import { useResolvedMedia } from "@/hooks/useResolvedMedia";
 import { useCurrency } from "@/hooks/useCurrency";
 import { ArrowRight, Tag, ExternalLink } from "lucide-react";
 import { safeUrl } from "@/lib/utils";
+import { BannerCarousel } from "@/components/BannerCarousel";
+import { ContactUs } from "@/components/ContactUs";
 
 export const Route = createFileRoute("/")({
   head: () => ({
