@@ -52,6 +52,12 @@ function Home() {
 
   return (
     <div className="space-y-10">
+      {/* Full-width banner ads (breaks out of centered container) */}
+      <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen">
+        <BannerCarousel />
+      </div>
+
+
       {/* Hero */}
       <section className="relative overflow-hidden rounded-3xl bg-hero p-8 sm:p-12 text-primary-foreground shadow-sky">
         <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-white/20 blur-3xl animate-float" />
