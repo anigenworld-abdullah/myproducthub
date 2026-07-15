@@ -766,6 +766,8 @@ const PRESET_THEMES = [
   { label: "Royal Purple", primary: "oklch(0.55 0.22 295)", accent: "oklch(0.85 0.10 295)", background: "oklch(0.99 0.01 290)" },
   { label: "Midnight", primary: "oklch(0.65 0.18 250)", accent: "oklch(0.50 0.10 250)", background: "oklch(0.20 0.04 250)" },
   { label: "Coral", primary: "oklch(0.70 0.18 30)", accent: "oklch(0.88 0.10 50)", background: "oklch(0.99 0.01 50)" },
+  { label: "Instagram", primary: "oklch(0.62 0.24 340)", accent: "oklch(0.75 0.18 55)", background: "oklch(0.98 0.01 320)" },
+  { label: "Ocean", primary: "oklch(0.60 0.16 200)", accent: "oklch(0.82 0.11 190)", background: "oklch(0.99 0.01 200)" },
 ];
 
 function ThemeEditor({ settings }: { settings: any }) {
