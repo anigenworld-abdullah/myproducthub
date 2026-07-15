@@ -126,6 +126,9 @@ function Home() {
           </div>
         )}
       </section>
+
+      {/* Contact us — only renders if admin filled in any contact info */}
+      <ContactUs />
     </div>
   );
 }
