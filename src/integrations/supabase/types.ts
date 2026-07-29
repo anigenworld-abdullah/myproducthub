@@ -115,9 +115,11 @@ export type Database = {
           category_id: string | null
           created_at: string
           description: string | null
+          download_url: string | null
           id: string
           image_url: string | null
           image_urls: string[]
+          is_digital: boolean
           name: string
           owner_id: string | null
           price: number
@@ -130,9 +132,11 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           description?: string | null
+          download_url?: string | null
           id?: string
           image_url?: string | null
           image_urls?: string[]
+          is_digital?: boolean
           name: string
           owner_id?: string | null
           price?: number
@@ -145,9 +149,11 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           description?: string | null
+          download_url?: string | null
           id?: string
           image_url?: string | null
           image_urls?: string[]
+          is_digital?: boolean
           name?: string
           owner_id?: string | null
           price?: number
