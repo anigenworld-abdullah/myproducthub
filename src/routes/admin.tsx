@@ -277,6 +277,8 @@ function ProductForm({ categories, editing, ownerId, onDone }: { categories: any
   const [priceCurrency, setPriceCurrency] = useState<CurrencyCode>(viewerCode);
   const [categoryId, setCategoryId] = useState<string>("");
   const [productLink, setProductLink] = useState("");
+  const [isDigital, setIsDigital] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState("");
   const [imagePaths, setImagePaths] = useState<string[]>([]);
   const [videoPath, setVideoPath] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -290,6 +292,8 @@ function ProductForm({ categories, editing, ownerId, onDone }: { categories: any
       setPriceCurrency((editing.price_currency ?? "USD") as CurrencyCode);
       setCategoryId(editing.category_id ?? "");
       setProductLink(editing.product_link ?? "");
+      setIsDigital(!!editing.is_digital);
+      setDownloadUrl(editing.download_url ?? "");
       const extras: string[] = Array.isArray(editing.image_urls) ? editing.image_urls : [];
       const combined = editing.image_url ? [editing.image_url, ...extras.filter((x) => x !== editing.image_url)] : extras;
       setImagePaths(combined);
@@ -300,6 +304,7 @@ function ProductForm({ categories, editing, ownerId, onDone }: { categories: any
   function reset() {
     setName(""); setDescription(""); setPrice(""); setPriceCurrency(viewerCode); setCategoryId("");
     setProductLink(""); setImagePaths([]); setVideoPath(null);
+    setIsDigital(false); setDownloadUrl("");
   }
 
   async function handleImages(files: FileList) {
@@ -343,6 +348,8 @@ function ProductForm({ categories, editing, ownerId, onDone }: { categories: any
       price_currency: priceCurrency,
       category_id: categoryId || null,
       product_link: productLink || null,
+      is_digital: isDigital,
+      download_url: isDigital ? (downloadUrl || null) : null,
       image_url: imagePaths[0] ?? null,
       image_urls: imagePaths,
       video_url: videoPath,
@@ -390,6 +397,24 @@ function ProductForm({ categories, editing, ownerId, onDone }: { categories: any
           {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
         <Input value={productLink} onChange={setProductLink} placeholder="External product link (https://…)" />
+      </div>
+      <div className="rounded-xl border bg-secondary/40 p-3 space-y-2">
+        <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+          <input
+            type="checkbox"
+            checked={isDigital}
+            onChange={(e) => setIsDigital(e.target.checked)}
+            className="h-4 w-4 accent-[var(--primary)]"
+          />
+          Digital product (ebook, course, software, template…)
+        </label>
+        {isDigital && (
+          <Input
+            value={downloadUrl}
+            onChange={setDownloadUrl}
+            placeholder="Download / access link (https://…)"
+          />
+        )}
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <MultiImageField paths={imagePaths} onPick={handleImages} onRemove={removeImage} uploading={uploadingImg} />

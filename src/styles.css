@@ -227,3 +227,50 @@
     to   { background-position: 350px 350px, 450px 400px, 400px 550px, 550px 450px; }
   }
 }
+
+@layer utilities {
+  /* ---- Extra smooth motion set ---- */
+  @keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in-up { animation: fade-in-up .7s cubic-bezier(.16,1,.3,1) both; }
+
+  @keyframes slide-in-left {
+    from { opacity: 0; transform: translateX(-30px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .animate-slide-in-left { animation: slide-in-left .7s cubic-bezier(.16,1,.3,1) both; }
+
+  @keyframes zoom-fade {
+    from { opacity: 0; transform: scale(.94); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .animate-zoom-fade { animation: zoom-fade .6s cubic-bezier(.16,1,.3,1) both; }
+
+  /* Sheen sweep across cards/buttons on hover */
+  .shine { position: relative; overflow: hidden; }
+  .shine::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.45) 50%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform .9s cubic-bezier(.16,1,.3,1);
+    pointer-events: none;
+  }
+  .shine:hover::after { transform: translateX(120%); }
+
+  /* Gentle continuous breathing */
+  @keyframes breathe {
+    0%,100% { transform: scale(1); }
+    50%     { transform: scale(1.035); }
+  }
+  .animate-breathe { animation: breathe 5s ease-in-out infinite; }
+
+  .lift { transition: transform .45s cubic-bezier(.16,1,.3,1), box-shadow .45s cubic-bezier(.16,1,.3,1); }
+  .lift:hover { transform: translateY(-6px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in-up, .animate-slide-in-left, .animate-zoom-fade,
+    .animate-breathe, .shine::after { animation: none !important; transition: none !important; }
+  }
+}
