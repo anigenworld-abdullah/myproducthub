@@ -165,7 +165,7 @@ export async function renderPoster(input: PosterInput): Promise<HTMLCanvasElemen
 
   // ---- image block ----
   const imgY = M;
-  const imgH = 1040;
+  const imgH = 980;
   ctx.save();
   roundRect(ctx, M, imgY, contentW, imgH, 44);
   ctx.fillStyle = p.panel;
@@ -225,8 +225,8 @@ export async function renderPoster(input: PosterInput): Promise<HTMLCanvasElemen
   ctx.textBaseline = "alphabetic";
 
   // ---- title + description (between image and badge) ----
-  const textTop = imgY + imgH + 72;
-  const textBottom = badgeY - 56;
+  const textTop = imgY + imgH + 64;
+  const textBottom = badgeY - 44;
 
   let titleSize = 78;
   let titleLines: string[] = [];
@@ -249,7 +249,7 @@ export async function renderPoster(input: PosterInput): Promise<HTMLCanvasElemen
   if (desc) {
     const descSize = 34;
     const lineH = descSize * 1.5;
-    const available = textBottom - (y - descSize * 0.4);
+    const available = textBottom - (y + 18) + lineH;
     const maxLines = Math.max(0, Math.min(7, Math.floor(available / lineH)));
     if (maxLines > 0) {
       ctx.font = `400 ${descSize}px ${SANS}`;
