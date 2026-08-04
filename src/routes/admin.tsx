@@ -788,6 +788,50 @@ function SettingsAdmin() {
   );
 }
 
+// ---------------- Poster access ----------------
+function PosterAccessAdmin({ settings }: { settings: any }) {
+  const qc = useQueryClient();
+  const [allow, setAllow] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (settings) setAllow(!!settings.allow_public_poster);
+  }, [settings]);
+
+  async function save(value: boolean) {
+    setAllow(value);
+    setSaving(true);
+    const { error } = await (supabase as any)
+      .from("site_settings")
+      .upsert({ id: 1, allow_public_poster: value, updated_at: new Date().toISOString() });
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("Saved");
+    qc.invalidateQueries({ queryKey: ["site-settings"] });
+  }
+
+  return (
+    <section className="space-y-3">
+      <h3 className="font-display text-lg font-bold flex items-center gap-2">
+        <ImageDown className="h-5 w-5 text-primary" /> Product posters
+      </h3>
+      <p className="text-xs text-muted-foreground">
+        Posters are ready-to-share 9:16 images (photo + description + price). Admins can always download them.
+      </p>
+      <label className="flex items-center gap-2 text-sm cursor-pointer">
+        <input
+          type="checkbox"
+          checked={allow}
+          disabled={saving}
+          onChange={(e) => save(e.target.checked)}
+          className="h-4 w-4 accent-[var(--primary)]"
+        />
+        Let visitors download product posters too
+      </label>
+    </section>
+  );
+}
+
 // ---------------- Theme editor ----------------
 const PRESET_THEMES = [
   { label: "Sky (default)", primary: "", accent: "", background: "" },
