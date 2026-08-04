@@ -111,6 +111,12 @@ function ProductPage() {
 
   const video = useResolvedMedia((q.data as any)?.video_url);
   const { format } = useCurrency();
+  const { isAdmin } = useAuth();
+  const settingsQ = useQuery({
+    queryKey: ["site-settings"],
+    queryFn: async () => (await supabase.from("site_settings").select("*").eq("id", 1).maybeSingle()).data,
+  });
+  const canPoster = isAdmin || !!(settingsQ.data as any)?.allow_public_poster;
 
   if (q.isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
   if (!q.data) return <div className="text-sm text-muted-foreground">Product not found.</div>;
