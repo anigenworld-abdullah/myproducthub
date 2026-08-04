@@ -774,6 +774,9 @@ function SettingsAdmin() {
         </div>
       </section>
 
+      {/* Poster access */}
+      <PosterAccessAdmin settings={settingsQ.data} />
+
       {/* Theme */}
       <ThemeEditor settings={settingsQ.data} />
 
