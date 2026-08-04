@@ -7,6 +7,8 @@ import { ArrowLeft, ExternalLink, Download, Sparkles } from "lucide-react";
 import { safeUrl } from "@/lib/utils";
 import { ShareButtons } from "@/components/ShareButtons";
 import { RelatedProducts } from "@/components/RelatedProducts";
+import { PosterDialog } from "@/components/PosterDialog";
+import { useAuth } from "@/hooks/useAuth";
 
 const SITE = "https://myproducthub.lovable.app";
 
