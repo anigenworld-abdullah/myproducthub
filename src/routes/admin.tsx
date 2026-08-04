@@ -7,7 +7,8 @@ import { uploadMedia } from "@/lib/media";
 import { useResolvedMedia } from "@/hooks/useResolvedMedia";
 import { useCurrency, CURRENCIES, type CurrencyCode } from "@/hooks/useCurrency";
 import { toast } from "sonner";
-import { Plus, Trash2, Megaphone, Tag, Package, Pencil, Save, X, Settings as SettingsIcon, Music, Shield } from "lucide-react";
+import { PosterDialog } from "@/components/PosterDialog";
+import { Plus, Trash2, Megaphone, Tag, Package, Pencil, Save, X, Settings as SettingsIcon, Music, Shield, ImageDown } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -254,7 +255,7 @@ function AdminProductRow({ p, canEdit, onEdit, onDelete }: { p: any; canEdit: bo
           <span className="opacity-60"> · entered {p.price_currency ?? "USD"} {Number(p.price)}</span>
           {" · "}{p.categories?.name ?? "—"}
         </div>
-        <div className="mt-2 flex gap-1">
+        <div className="mt-2 flex flex-wrap items-center gap-1">
           {canEdit ? (
             <>
               <button onClick={onEdit} className="rounded-md p-1.5 hover:bg-accent"><Pencil className="h-3.5 w-3.5" /></button>
@@ -263,6 +264,7 @@ function AdminProductRow({ p, canEdit, onEdit, onDelete }: { p: any; canEdit: bo
           ) : (
             <span className="text-[10px] text-muted-foreground italic">read-only (owned by another admin)</span>
           )}
+          <PosterDialog product={p} variant="ghost" />
         </div>
       </div>
     </div>
@@ -772,6 +774,9 @@ function SettingsAdmin() {
         </div>
       </section>
 
+      {/* Poster access */}
+      <PosterAccessAdmin settings={settingsQ.data} />
+
       {/* Theme */}
       <ThemeEditor settings={settingsQ.data} />
 
@@ -780,6 +785,50 @@ function SettingsAdmin() {
 
       <ModeratorsAdmin />
     </div>
+  );
+}
+
+// ---------------- Poster access ----------------
+function PosterAccessAdmin({ settings }: { settings: any }) {
+  const qc = useQueryClient();
+  const [allow, setAllow] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (settings) setAllow(!!settings.allow_public_poster);
+  }, [settings]);
+
+  async function save(value: boolean) {
+    setAllow(value);
+    setSaving(true);
+    const { error } = await (supabase as any)
+      .from("site_settings")
+      .upsert({ id: 1, allow_public_poster: value, updated_at: new Date().toISOString() });
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("Saved");
+    qc.invalidateQueries({ queryKey: ["site-settings"] });
+  }
+
+  return (
+    <section className="space-y-3">
+      <h3 className="font-display text-lg font-bold flex items-center gap-2">
+        <ImageDown className="h-5 w-5 text-primary" /> Product posters
+      </h3>
+      <p className="text-xs text-muted-foreground">
+        Posters are ready-to-share 9:16 images (photo + description + price). Admins can always download them.
+      </p>
+      <label className="flex items-center gap-2 text-sm cursor-pointer">
+        <input
+          type="checkbox"
+          checked={allow}
+          disabled={saving}
+          onChange={(e) => save(e.target.checked)}
+          className="h-4 w-4 accent-[var(--primary)]"
+        />
+        Let visitors download product posters too
+      </label>
+    </section>
   );
 }
 

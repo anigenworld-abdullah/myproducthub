@@ -1,0 +1,1 @@
+ALTER TABLE public.site_settings ADD COLUMN IF NOT EXISTS allow_public_poster boolean NOT NULL DEFAULT false;
