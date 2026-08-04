@@ -254,7 +254,7 @@ function AdminProductRow({ p, canEdit, onEdit, onDelete }: { p: any; canEdit: bo
           <span className="opacity-60"> · entered {p.price_currency ?? "USD"} {Number(p.price)}</span>
           {" · "}{p.categories?.name ?? "—"}
         </div>
-        <div className="mt-2 flex gap-1">
+        <div className="mt-2 flex flex-wrap items-center gap-1">
           {canEdit ? (
             <>
               <button onClick={onEdit} className="rounded-md p-1.5 hover:bg-accent"><Pencil className="h-3.5 w-3.5" /></button>
@@ -263,6 +263,7 @@ function AdminProductRow({ p, canEdit, onEdit, onDelete }: { p: any; canEdit: bo
           ) : (
             <span className="text-[10px] text-muted-foreground italic">read-only (owned by another admin)</span>
           )}
+          <PosterDialog product={p} variant="ghost" />
         </div>
       </div>
     </div>
