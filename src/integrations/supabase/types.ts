@@ -174,6 +174,7 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          allow_public_poster: boolean
           bg_music_url: string | null
           contact_email: string | null
           contact_instagram: string | null
@@ -187,6 +188,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          allow_public_poster?: boolean
           bg_music_url?: string | null
           contact_email?: string | null
           contact_instagram?: string | null
@@ -200,6 +202,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          allow_public_poster?: boolean
           bg_music_url?: string | null
           contact_email?: string | null
           contact_instagram?: string | null
