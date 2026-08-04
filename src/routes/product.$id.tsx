@@ -183,6 +183,8 @@ function ProductPage() {
             )}
           </div>
 
+          {canPoster && <PosterDialog product={p} />}
+
           <ShareButtons path={`/product/${id}`} title={p.name} />
         </div>
       </div>
