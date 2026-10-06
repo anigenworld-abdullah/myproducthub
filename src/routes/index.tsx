@@ -11,10 +11,12 @@ import { ContactUs } from "@/components/ContactUs";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "TheProducts HUB" },
+      { title: "MY PRODUCT HUB — Browse Products" },
       { name: "description", content: "Browse hand-picked products across many categories with images, video, and direct buy links." },
-      { property: "og:title", content: "TheProducts HUB" },
+      { property: "og:title", content: "MY PRODUCT HUB — Browse Products" },
       { property: "og:description", content: "Browse hand-picked products across many categories with images, video, and direct buy links." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Home,
@@ -75,7 +77,7 @@ function Home() {
 
       {/* Ads */}
       {adsQ.data && adsQ.data.length > 0 && (
-        <section className="grid gap-4 sm:grid-cols-2">
+        <section className="reveal grid gap-4 sm:grid-cols-2">
           {adsQ.data.map((ad) => (
             <AdCard key={ad.id} ad={ad} />
           ))}
@@ -99,8 +101,7 @@ function Home() {
                 key={c.id}
                 to="/category/$slug"
                 params={{ slug: c.slug }}
-                style={{ animationDelay: `${i * 40}ms` }}
-                className="group rounded-2xl border bg-card p-5 shadow-card hover-lift animate-slide-up"
+                className="reveal group rounded-2xl border bg-card p-5 shadow-card hover-lift"
               >
                 <Tag className="h-5 w-5 text-primary mb-2 transition-transform group-hover:rotate-12" />
                 <div className="font-semibold">{c.name}</div>
@@ -142,8 +143,7 @@ function ProductCard({ product, index }: { product: any; index: number }) {
     <Link
       to="/product/$id"
       params={{ id: product.id }}
-      style={{ animationDelay: `${index * 35}ms` }}
-      className="group mb-4 break-inside-avoid block overflow-hidden rounded-2xl border bg-card shadow-card hover-lift animate-slide-up"
+      className="reveal group mb-4 break-inside-avoid block overflow-hidden rounded-2xl border bg-card shadow-card hover-lift"
     >
       <div className="relative overflow-hidden bg-secondary">
         {img ? (

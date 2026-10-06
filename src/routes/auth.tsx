@@ -5,6 +5,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
+  head: () => ({ meta: [
+    { title: "Sign in — MY PRODUCT HUB" },
+    { name: "description", content: "Sign in to your MY PRODUCT HUB account." },
+    { property: "og:title", content: "Sign in — MY PRODUCT HUB" },
+    { property: "og:description", content: "Sign in to your MY PRODUCT HUB account." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AuthPage,
 });
 

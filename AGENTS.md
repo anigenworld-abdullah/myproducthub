@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Scroll reveals use one shared IntersectionObserver with child-list mutation tracking, so asynchronously loaded cards and navigated pages animate without scroll listeners; content stays visible before initialization and reduced motion is respected.

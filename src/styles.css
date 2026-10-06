@@ -147,8 +147,17 @@
   }
   .hover-lift:hover { transform: translateY(-4px); box-shadow: var(--shadow-sky); }
 
-  .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
-  .reveal.in-view { opacity: 1; transform: translateY(0); }
+  .reveal {
+    transition: opacity 0.65s ease-out, translate 0.75s cubic-bezier(0.16,1,0.3,1), scale 0.75s cubic-bezier(0.16,1,0.3,1), transform 0.3s ease-out, box-shadow 0.3s ease-out;
+  }
+  .reveal.reveal-pending { opacity: 0; translate: 0 36px; scale: 0.96; }
+  .reveal.in-view { opacity: 1; translate: 0 0; scale: 1; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal, .reveal.reveal-pending, .reveal.in-view {
+      opacity: 1; translate: none; scale: none; transition: none;
+    }
+  }
 
   .animate-float-slow { animation: var(--animate-float-slow); }
   .animate-spin-slow { animation: var(--animate-spin-slow); }

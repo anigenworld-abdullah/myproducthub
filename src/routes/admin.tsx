@@ -11,6 +11,14 @@ import { PosterDialog } from "@/components/PosterDialog";
 import { Plus, Trash2, Megaphone, Tag, Package, Pencil, Save, X, Settings as SettingsIcon, Music, Shield, ImageDown } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
+  head: () => ({ meta: [
+    { title: "Admin Panel — MY PRODUCT HUB" },
+    { name: "description", content: "Manage your MY PRODUCT HUB products." },
+    { property: "og:title", content: "Admin Panel — MY PRODUCT HUB" },
+    { property: "og:description", content: "Manage your MY PRODUCT HUB products." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AdminPage,
 });
 
