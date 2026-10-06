@@ -6,6 +6,14 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/category/$slug")({
+  head: ({ params }) => ({ meta: [
+    { title: `${params.slug} — MY PRODUCT HUB` },
+    { name: "description", content: `Browse ${params.slug} products on MY PRODUCT HUB.` },
+    { property: "og:title", content: `${params.slug} — MY PRODUCT HUB` },
+    { property: "og:description", content: `Browse ${params.slug} products on MY PRODUCT HUB.` },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: CategoryPage,
 });
 
@@ -73,8 +81,7 @@ function Card({ product, index }: { product: any; index: number }) {
     <Link
       to="/product/$id"
       params={{ id: product.id }}
-      style={{ animationDelay: `${index * 35}ms` }}
-      className="group mb-4 break-inside-avoid block overflow-hidden rounded-2xl border bg-card shadow-card hover-lift animate-slide-up"
+      className="reveal group mb-4 break-inside-avoid block overflow-hidden rounded-2xl border bg-card shadow-card hover-lift"
     >
       <div className="relative overflow-hidden bg-secondary">
         {img ? <img src={img} alt={product.name} loading="lazy" className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105" /> : <div className="flex aspect-[4/3] items-center justify-center text-xs text-muted-foreground">No image</div>}
